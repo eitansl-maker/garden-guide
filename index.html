@@ -15,6 +15,7 @@ main{padding:16px;max-width:560px;margin:auto}h2{font-size:18px;margin:18px 0 8p
 .ilan{background:#eef4e6;border-radius:10px;padding:10px;margin-top:10px}
 .lang{display:block;margin:0 0 8px auto;margin-inline:auto 0;background:#fff3;color:#fff;border:1px solid #fff8;border-radius:8px;padding:4px 10px;font:inherit;cursor:pointer}
 nav{display:flex;gap:8px;padding:10px 16px 0;max-width:560px;margin:auto}nav button{flex:1;padding:8px;border:0;border-radius:10px;font:inherit;background:#e4dfd0;cursor:pointer}nav button.on{background:var(--g);color:#fff}.farm h4{margin:14px 0 4px;color:var(--g)}.farm li{margin:4px 0}.farm a{color:var(--g)}.note{font-size:13px;color:#8a6d00}
+@keyframes sp{to{transform:rotate(360deg)}}.spin{display:inline-block;width:18px;height:18px;border:3px solid #9bb88a;border-top-color:var(--g);border-radius:50%;animation:sp .8s linear infinite;vertical-align:middle;margin-inline-end:8px}
 .draft{font-size:12px;color:#8a6d00;margin-top:16px}
 </style></head><body>
 <header id="hd"></header>
@@ -33,7 +34,7 @@ function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diag
  try{key.value=localStorage.getItem("gkey")||""}catch(e){}
  sk.onclick=()=>{try{localStorage.setItem("gkey",key.value.trim())}catch(e){}alert("OK")};
  ai.onclick=async()=>{const k=key.value.trim();if(!k){alert(t.diagNoKey);document.querySelector("details").open=true;return}
-  out.style.display="block";out.textContent=t.diagWait;ai.disabled=true;
+  out.style.display="block";out.innerHTML=`<span class="spin"></span>${t.diagWait}`;ai.disabled=true;
   try{const img=await shrink(f);const q=prompt_(who.value,cr.value);
    const ms=(await(await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key="+k,{signal:AbortSignal.timeout(15000)})).json());if(ms.error)throw new Error(ms.error.message);
    const ok=x=>(x.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(x.name)&&!/image|tts|live|exp|thinking|audio|robotics|computer/.test(x.name);
@@ -41,7 +42,7 @@ function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diag
    const names=[...all.filter(n=>!/lite|preview/.test(n)).sort().reverse(),...all.filter(n=>/preview/.test(n)&&!/lite/.test(n)).sort().reverse(),...all.filter(n=>/lite/.test(n)).sort().reverse()];
    if(!names.length)throw new Error("no model");
    let res,last="";
-   outer:for(const n of [...names.filter(n=>/2\.5-flash$/.test(n)),...names.filter(n=>!/2\.5-flash$/.test(n))].slice(0,3)){for(let a=0;a<1;a++){out.textContent=t.diagWait+" ("+n.replace("models/","")+")";const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify(Object.assign({contents:[{parts:[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}]}]},/2\.5-flash$/.test(n)?{generationConfig:{thinkingConfig:{thinkingBudget:0}}}:{}))}).catch(e=>({status:599,json:async()=>({error:{message:"timeout"}})}));res=await r.json();if(!res.error)break outer;last=res.error.message;if(!/demand|overload|unavailable|try again|quota|rate|timeout/i.test(last)&&r.status<500&&r.status!==429)break outer;if(r.status===599)break;await new Promise(z=>setTimeout(z,1500))}}
+   outer:for(const n of [...names.filter(n=>/2\.5-flash$/.test(n)),...names.filter(n=>!/2\.5-flash$/.test(n))].slice(0,3)){for(let a=0;a<1;a++){out.innerHTML=`<span class="spin"></span>${t.diagWait} (${n.replace("models/","")})`;const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify(Object.assign({contents:[{parts:[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}]}]},/2\.5-flash$/.test(n)?{generationConfig:{thinkingConfig:{thinkingBudget:0}}}:{}))}).catch(e=>({status:599,json:async()=>({error:{message:"timeout"}})}));res=await r.json();if(!res.error)break outer;last=res.error.message;if(!/demand|overload|unavailable|try again|quota|rate|timeout/i.test(last)&&r.status<500&&r.status!==429)break outer;if(r.status===599)break;await new Promise(z=>setTimeout(z,1500))}}
    if(res.error)throw new Error(last);
    out.textContent=(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?"}catch(e){out.textContent=t.diagErr+" "+e.message}
   ai.disabled=false};
