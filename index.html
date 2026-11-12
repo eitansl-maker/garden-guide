@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="crops.js?v=28"></script><script src="farmer.js?v=28"></script><script src="i18n.js?v=28"></script>
+<script src="crops.js?v=29"></script><script src="farmer.js?v=29"></script><script src="i18n.js?v=29"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -84,14 +84,14 @@ async function gem(k,parts,st,only){const B="https://generativelanguage.googleap
   throw new Error(nm+": failed")};
  try{const w=await Promise.any(names.map(one));return only?w:w.text}catch(e){const es=(e.errors||[e]).map(x=>x.message);const k_=es.find(x=>/^KEY:/.test(x));throw new Error(k_?k_.slice(5):es.join(" | "))}}
 async function speedtest(k,out){out.style.display="block";out.innerHTML="";for(const n of GEM_MODELS){out.innerHTML+=`<div>⏳ ${n.replace("models/","")}...</div>`;const t0=Date.now();try{await gem(k,[{text:"ענה במילה אחת: שלום"}],()=>{},[n]);out.lastChild.textContent=`✅ ${n.replace("models/","")}: ${Math.round((Date.now()-t0)/100)/10}s`}catch(e){out.lastChild.textContent=`❌ ${e.message}`}}}
-function prompt_(w,c){return (L==="he"?"אני ":"I am ")+(w==="f"?(L==="he"?"חקלאי":"a farmer"):(L==="he"?"מגדל בגינה ביתית":"a home gardener"))+(L==="he"?" בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":" in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label.")}
+function prompt_(c){return L==="he"?"אני מגדל בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":"I grow crops in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly in English: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label."}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
-function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><label>${t.diagWho}<br><select id="who"><option value="h">${t.home}</option><option value="f">${t.farmer}</option></select></label><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><p class="note" id="nokey"></p><p class="note">${t.diagNote}</p></div>`;
+function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><p class="note" id="nokey"></p><p class="note">${t.diagNote}</p></div>`;
  let f=null;ph.onchange=()=>{f=ph.files[0];if(f){pv.src=URL.createObjectURL(f);pv.style.display="block";ai.disabled=false}};
  {let k0="";try{k0=localStorage.getItem("gkey")||""}catch(e){}if(!k0){nokey.innerHTML=`<a href="#" id="gh">${t.diagNoKey} ${t.diagGoHelp}</a>`;gh.onclick=e=>{e.preventDefault();TAB="help";tabs();help()}}}
  ai.onclick=async()=>{let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k){TAB="help";tabs();help();return}
   out.style.display="block";out.innerHTML=`<span class="spin"></span>${t.diagWait}`;ai.disabled=true;
-  try{const img=await shrink(f);const q=prompt_(who.value,cr.value);out.textContent=await gem(k,[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}],n=>out.innerHTML=`<span class="spin"></span>${t.diagWait} (${n})`)}catch(e){out.textContent=t.diagErr+" "+e.message}
+  try{const img=await shrink(f);const q=prompt_(cr.value);out.textContent=await gem(k,[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}],n=>out.innerHTML=`<span class="spin"></span>${t.diagWait} (${n})`)}catch(e){out.textContent=t.diagErr+" "+e.message}
   ai.disabled=false};
 
 }
@@ -120,7 +120,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();home();
-const VER="v28";
+const VER="v29";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
