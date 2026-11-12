@@ -62,7 +62,7 @@ function fask(){fb.innerHTML=`<div class="detail"><h3>💬 שאל יועץ</h3><
   const q="אתה יועץ חקלאי בישראל שמסייע לחקלאים. ענה בעברית קצרה וברורה, מעשית. אם לא בטוח, אמור זאת ומה לבדוק. אל תמליץ על מינוני חומרי הדברה, הפנה לתווית התכשיר וליועץ שה\"ם. שאלה: "+aq.value.trim();
   try{ao.textContent=await gem(k,[{text:q}],n=>ao.innerHTML=`<span class="spin"></span>חושב... (${n})`)}catch(e){ao.textContent="שגיאה: "+e.message}ab.disabled=false}}
 // Update when Google retires a model. All are tried in parallel; first answer wins.
-const GEM_MODELS=["models/gemini-3.8-flash","models/gemini-flash-latest","models/gemini-flash-lite-latest"];
+const GEM_MODELS=["models/gemini-3.5-flash","models/gemini-3.6-flash","models/gemini-3.5-flash-lite","models/gemini-3.8-flash"];
 async function gem(k,parts,st,only){const B="https://generativelanguage.googleapis.com/v1beta/",ctl=new AbortController(),names=only||GEM_MODELS;st(names.map(n=>n.replace("models/","")).join(" / "));
  const one=async n=>{const t0=Date.now(),nm=n.replace("models/","");
   for(const cfg of [{generationConfig:{thinkingConfig:{thinkingLevel:"low"}}},{}]){
@@ -106,7 +106,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();home();
-const VER="v19";
+const VER="v20";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
