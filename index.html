@@ -36,9 +36,12 @@ function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diag
   out.style.display="block";out.textContent=t.diagWait;ai.disabled=true;
   try{const img=await shrink(f);const q=prompt_(who.value,cr.value);
    const ms=(await(await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key="+k)).json());if(ms.error)throw new Error(ms.error.message);
-   const names=(ms.models||[]).filter(x=>/flash/.test(x.name)&&!/lite|image|tts|live|preview|exp|thinking/.test(x.name)&&(x.supportedGenerationMethods||[]).includes("generateContent")).map(x=>x.name).sort().reverse();
+   const ok=x=>(x.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(x.name)&&!/image|tts|live|exp|thinking|audio|robotics|computer/.test(x.name);
+   const all=(ms.models||[]).filter(ok).map(x=>x.name);
+   const names=[...all.filter(n=>!/lite|preview/.test(n)).sort().reverse(),...all.filter(n=>/preview/.test(n)&&!/lite/.test(n)).sort().reverse(),...all.filter(n=>/lite/.test(n)).sort().reverse()];
    if(!names.length)throw new Error("no model");
-   let res,last="";for(const n of names.slice(0,3)){const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}]}]})});res=await r.json();if(!res.error)break;last=res.error.message}
+   let res,last="";
+   outer:for(const n of names.slice(0,6)){for(let a=0;a<2;a++){out.textContent=t.diagWait+" ("+n.replace("models/","")+")";const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}]}]})});res=await r.json();if(!res.error)break outer;last=res.error.message;if(!/demand|overload|unavailable|try again|quota|rate/i.test(last)&&r.status<500&&r.status!==429)break outer;await new Promise(z=>setTimeout(z,1500))}}
    if(res.error)throw new Error(last);
    out.textContent=(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?"}catch(e){out.textContent=t.diagErr+" "+e.message}
   ai.disabled=false};
