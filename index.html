@@ -20,47 +20,57 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="crops.js?v=25"></script><script src="farmer.js?v=25"></script><script src="i18n.js?v=25"></script>
+<script src="crops.js?v=26"></script><script src="farmer.js?v=26"></script><script src="i18n.js?v=26"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
 const T=()=>I18N[L],crop=c=>L==="he"?c:Object.assign({},c,T().crops[c.id]);
 let TAB="home";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="home"?"on":""}" id="t1">${t.tabHome}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button><button class="${TAB=="about"?"on":""}" id="t5">${t.tabAbout}</button>`;t5.onclick=()=>{TAB="about";tabs();about()};t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
 let FT="log";
-const TYPES=["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"];
+const FS={he:{log:"📒 יומן",ask:"💬 שאל יועץ",guides:"📚 מדריכים",types:["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"],
+ newRec:"➕ רישום חדש",kind:"סוג רישום",kDone:"בוצע (עשיתי)",kIns:"הוראת מדריך (לביצוע)",by:"שם המדריך",plot:"חלקה",plotPh:"למשל: חלקה צפונית",crop:"גידול",cropPh:"למשל: תות",date:"תאריך",dueDate:"תאריך לביצוע",type:"סוג טיפול",prod:"חומר / דשן",dose:"מינון / כמות",notes:"הערות",save:"שמור ביומן",saveIns:"שמור הוראה",
+ open:"📋 הוראות מדריך פתוחות",late:"עבר התאריך",instr:"מדריך",markDone:"✔ סמן כבוצע",del:"מחק",doneNote:"בוצע לפי הוראת מדריך",status:"מצב לפי חלקה",lastT:"טיפול אחרון",hist:"היסטוריה",none:"עדיין אין רישומים.",export:"⬇️ ייצוא לקובץ (CSV)",local:"היומן נשמר רק בטלפון הזה. אם תנקה נתוני אתר הוא יימחק, ולכן כדאי לייצא מדי פעם.",need:"חלקה וגידול חובה",confirm:"למחוק?",ins:"הוראה: ",csvH:"תאריך,חלקה,גידול,טיפול,חומר,מינון,הערות",
+ askT:"💬 שאל יועץ",askNote:"שאל שאלה בחקלאות. התשובה היא הערכה של AI ולא תחליף ליועץ שה\"ם; בטיפול כימי תמיד לפי התווית.",askPh:"למשל: העלים של התות מצהיבים בקצוות, מה בודקים?",askBtn:"שאל",askKey:"נדרש מפתח Gemini (ראה לשונית \"איך מתחילים\").",askNoKey:"הדבק קודם מפתח Gemini בלשונית \"איך מתחילים\".",think:"חושב...",err:"שגיאה: ",
+ askPrompt:"אתה יועץ חקלאי בישראל שמסייע לחקלאים. ענה בעברית קצרה וברורה, מעשית. אם לא בטוח, אמור זאת ומה לבדוק. אל תמליץ על מינוני חומרי הדברה, הפנה לתווית התכשיר וליועץ שה\"ם. שאלה: "},
+ en:{log:"📒 Log",ask:"💬 Ask an advisor",guides:"📚 Guides",types:["Spraying","Pest control","Fertilizing","Irrigation","Pruning / soil work","Sowing / planting","Harvest","Other"],
+ newRec:"➕ New entry",kind:"Entry type",kDone:"Done (I did it)",kIns:"Advisor instruction (to do)",by:"Advisor name",plot:"Plot",plotPh:"e.g. North plot",crop:"Crop",cropPh:"e.g. Strawberry",date:"Date",dueDate:"Due date",type:"Treatment type",prod:"Product / fertilizer",dose:"Dose / amount",notes:"Notes",save:"Save to log",saveIns:"Save instruction",
+ open:"📋 Open advisor instructions",late:"Overdue",instr:"Advisor",markDone:"✔ Mark done",del:"Delete",doneNote:"Done per advisor instruction",status:"Status by plot",lastT:"Last treatment",hist:"History",none:"No entries yet.",export:"⬇️ Export to file (CSV)",local:"The log is saved only on this phone. Clearing site data deletes it, so export from time to time.",need:"Plot and crop are required",confirm:"Delete?",ins:"Instruction: ",csvH:"Date,Plot,Crop,Treatment,Product,Dose,Notes",
+ askT:"💬 Ask an advisor",askNote:"Ask a farming question. The answer is an AI estimate, not a substitute for an extension officer; for chemical treatment always follow the label.",askPh:"e.g. Strawberry leaf edges are yellowing, what should I check?",askBtn:"Ask",askKey:"Needs a Gemini key (see the \"Get started\" tab).",askNoKey:"Paste a Gemini key first in the \"Get started\" tab.",think:"Thinking...",err:"Error: ",
+ askPrompt:"You are an agricultural advisor in Israel helping farmers. Answer in short, clear, practical English. If unsure, say so and what to check. Do not recommend pesticide doses; refer to the product label and an extension officer. Question: "}};
+const FSx=()=>L==="he"?FS.he:FS.en;
 const lg=()=>{try{return JSON.parse(localStorage.getItem("flog")||"[]")}catch(e){return[]}};
-const sv=a=>{try{localStorage.setItem("flog",JSON.stringify(a))}catch(e){alert("לא ניתן לשמור")}};
+const sv=a=>{try{localStorage.setItem("flog",JSON.stringify(a))}catch(e){alert("error")}};
 const esc=x=>String(x||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function farm(){app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+[["log","📒 יומן"],["ask","💬 שאל יועץ"],["guides","📚 מדריכים"]].map(x=>`<button class="card" data-f="${x[0]}" style="flex:1;padding:8px;${FT==x[0]?"background:var(--g);color:#fff":""}">${x[1]}</button>`).join("")+`</div><div id="fb" dir="rtl"></div>`;
+const tyl=x=>x.ti!=null?FSx().types[x.ti]:x.type;
+function farm(){const f=FSx();app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+["log","ask","guides"].map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
  app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{FT=b.dataset.f;farm()});({log:flog,ask:fask,guides:fguides})[FT]()}
-function fguides(){const t=T();fb.innerHTML=`<p>${t.farmIntro}</p>`+FARM.map(f=>`<div class="detail farm" style="margin-bottom:12px"><h3>${f.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${f.src.url}" target="_blank" rel="noopener">${f.src.name}</a></p></div>`).join("")}
-function flog(){const ALL=lg(),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
+function fguides(){const t=T();fb.innerHTML=`<p>${t.farmIntro}</p>`+FARM.map(g=>{const f=L==="he"?g:g.en;return `<div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`}).join("")}
+function flog(){const f=FSx(),ALL=lg(),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
  const today=new Date().toISOString().slice(0,10);
- const last=plots.map(p=>{const e=L_.filter(x=>x.plot===p).sort((a,b)=>b.date.localeCompare(a.date));const l=e[0];const ty={};e.forEach(x=>{if(!ty[x.type])ty[x.type]=x});return `<div class="detail" style="margin-bottom:8px"><b>${esc(p)}</b> · ${esc(l.crop)}<br><small>טיפול אחרון: ${esc(l.type)} ב-${l.date}${l.product?" ("+esc(l.product)+")":""}</small><br><small>${Object.values(ty).map(x=>esc(x.type)+" "+x.date).join(" · ")}</small></div>`}).join("");
- fb.innerHTML=`<div class="detail"><h3>➕ רישום חדש</h3>
- <label>סוג רישום<select id="lk" style="${inp}"><option value="done">בוצע (עשיתי)</option><option value="ins">הוראת מדריך (לביצוע)</option></select></label>
- <label id="lbw" style="display:none">שם המדריך<input id="lb" style="${inp}"></label>
- <label>חלקה<input id="lp" list="pl" style="${inp}" placeholder="למשל: חלקה צפונית"></label><datalist id="pl">${plots.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
- <label>גידול<input id="lc" style="${inp}" placeholder="למשל: תות"></label>
- <label id="ldl">תאריך<input id="ld" type="date" value="${today}" style="${inp}"></label>
- <label>סוג טיפול<select id="lt" style="${inp}">${TYPES.map(x=>`<option>${x}</option>`).join("")}</select></label>
- <label>חומר / דשן<input id="lm" style="${inp}"></label>
- <label>מינון / כמות<input id="ls" style="${inp}"></label>
- <label>הערות<textarea id="ln" rows="2" style="${inp}"></textarea></label>
- <button class="card" id="la" style="width:100%;margin-top:8px;background:var(--g);color:#fff">שמור ביומן</button></div>
- ${INS.length?`<h3>📋 הוראות מדריך פתוחות</h3>`+[...INS].sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="detail" style="margin-bottom:8px;border-right:4px solid #c98a00"><b>${x.date}</b> · ${esc(x.plot)} · ${esc(x.crop)}<br>${esc(x.type)}${x.product?": "+esc(x.product):""}${x.dose?" · "+esc(x.dose):""}${x.by?"<br><small>מדריך: "+esc(x.by)+"</small>":""}${x.notes?"<br><small>"+esc(x.notes)+"</small>":""}${x.date<today?"<br><small style=\"color:#b00\">עבר התאריך</small>":""}<br><button class="card" data-ok="${x.id}" style="margin-top:6px">✔ סמן כבוצע</button> <button class="back" data-d="${x.id}">מחק</button></div>`).join(""):""}
- <h3>מצב לפי חלקה</h3>${last||"<p>עדיין אין רישומים.</p>"}
- <h3>היסטוריה</h3>`+[...L_].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(x=>`<div class="detail" style="margin-bottom:8px"><b>${x.date}</b> · ${esc(x.plot)} · ${esc(x.crop)}<br>${esc(x.type)}${x.product?": "+esc(x.product):""}${x.dose?" · "+esc(x.dose):""}${x.by?"<br><small>מדריך: "+esc(x.by)+"</small>":""}${x.notes?"<br><small>"+esc(x.notes)+"</small>":""}<br><button class="back" data-d="${x.id}">מחק</button></div>`).join("")+(L_.length?`<button class="card" id="lx" style="width:100%">⬇️ ייצוא לקובץ (CSV)</button>`:"")+`<p class="note">היומן נשמר רק בטלפון הזה. אם תנקה נתוני אתר הוא יימחק, ולכן כדאי לייצא מדי פעם.</p>`;
- lk.onchange=()=>{lbw.style.display=lk.value==="ins"?"block":"none";ldl.firstChild.textContent=lk.value==="ins"?"תאריך לביצוע":"תאריך";la.textContent=lk.value==="ins"?"שמור הוראה":"שמור ביומן"};
- fb.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>{const a=lg(),x=a.find(y=>y.id==b.dataset.ok);if(x){x.kind="done";x.date=today;x.notes=(x.notes?x.notes+" · ":"")+"בוצע לפי הוראת מדריך";sv(a);flog()}});
- la.onclick=()=>{if(!lp.value.trim()||!lc.value.trim()){alert("חלקה וגידול חובה");return}const a=lg();a.push({kind:lk.value,by:lb.value.trim(),id:Date.now(),plot:lp.value.trim(),crop:lc.value.trim(),date:ld.value,type:lt.value,product:lm.value.trim(),dose:ls.value.trim(),notes:ln.value.trim()});sv(a);flog()};
- fb.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{if(confirm("למחוק?")){sv(lg().filter(x=>x.id!=b.dataset.d));flog()}});
- if(window.lx)lx.onclick=()=>{const q=v=>'"'+String(v||"").replace(/"/g,'""')+'"';const csv="\ufeff"+["תאריך,חלקה,גידול,טיפול,חומר,מינון,הערות",...lg().map(x=>[x.date,x.plot,x.crop,(x.kind==="ins"?"הוראה: ":"")+x.type,x.product,x.dose,(x.by?"מדריך "+x.by+". ":"")+x.notes].map(q).join(","))].join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="yoman-gidul.csv";a.click()}}
-function fask(){fb.innerHTML=`<div class="detail"><h3>💬 שאל יועץ</h3><p class="note">שאל שאלה בחקלאות. התשובה היא הערכה של AI ולא תחליף ליועץ שה"ם; בטיפול כימי תמיד לפי התווית.</p><textarea id="aq" rows="4" style="width:100%;padding:8px;font:inherit" placeholder="למשל: העלים של התות מצהיבים בקצוות, מה בודקים?"></textarea><button class="card" id="ab" style="width:100%;margin-top:8px;background:var(--g);color:#fff">שאל</button><div id="ao" class="ilan" style="display:none;white-space:pre-wrap"></div><p class="note">נדרש מפתח Gemini (אותו מפתח של האבחון בתמונה).</p></div>`;
- ab.onclick=async()=>{let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k){alert("הדבק קודם מפתח Gemini בלשונית 'אבחון בתמונה'.");return}if(!aq.value.trim())return;
-  ao.style.display="block";ao.innerHTML='<span class="spin"></span>חושב...';ab.disabled=true;
-  const q="אתה יועץ חקלאי בישראל שמסייע לחקלאים. ענה בעברית קצרה וברורה, מעשית. אם לא בטוח, אמור זאת ומה לבדוק. אל תמליץ על מינוני חומרי הדברה, הפנה לתווית התכשיר וליועץ שה\"ם. שאלה: "+aq.value.trim();
-  try{ao.textContent=await gem(k,[{text:q}],n=>ao.innerHTML=`<span class="spin"></span>חושב... (${n})`)}catch(e){ao.textContent="שגיאה: "+e.message}ab.disabled=false}}
+ const last=plots.map(p=>{const e=L_.filter(x=>x.plot===p).sort((a,b)=>b.date.localeCompare(a.date));const l=e[0];const ty={};e.forEach(x=>{const k=tyl(x);if(!ty[k])ty[k]=x});return `<div class="detail" style="margin-bottom:8px"><b>${esc(p)}</b> · ${esc(l.crop)}<br><small>${f.lastT}: ${esc(tyl(l))} · ${l.date}${l.product?" ("+esc(l.product)+")":""}</small><br><small>${Object.entries(ty).map(([k,x])=>esc(k)+" "+x.date).join(" · ")}</small></div>`}).join("");
+ fb.innerHTML=`<div class="detail"><h3>${f.newRec}</h3>
+ <label>${f.kind}<select id="lk" style="${inp}"><option value="done">${f.kDone}</option><option value="ins">${f.kIns}</option></select></label>
+ <label id="lbw" style="display:none">${f.by}<input id="lb" style="${inp}"></label>
+ <label>${f.plot}<input id="lp" list="pl" style="${inp}" placeholder="${f.plotPh}"></label><datalist id="pl">${plots.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+ <label>${f.crop}<input id="lc" style="${inp}" placeholder="${f.cropPh}"></label>
+ <label id="ldl"><span id="ldt">${f.date}</span><input id="ld" type="date" value="${today}" style="${inp}"></label>
+ <label>${f.type}<select id="lt" style="${inp}">${f.types.map((x,i)=>`<option value="${i}">${x}</option>`).join("")}</select></label>
+ <label>${f.prod}<input id="lm" style="${inp}"></label>
+ <label>${f.dose}<input id="ls" style="${inp}"></label>
+ <label>${f.notes}<textarea id="ln" rows="2" style="${inp}"></textarea></label>
+ <button class="card" id="la" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${f.save}</button></div>
+ ${INS.length?`<h3>${f.open}</h3>`+[...INS].sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="detail" style="margin-bottom:8px;border-inline-start:4px solid #c98a00"><b>${x.date}</b> · ${esc(x.plot)} · ${esc(x.crop)}<br>${esc(tyl(x))}${x.product?": "+esc(x.product):""}${x.dose?" · "+esc(x.dose):""}${x.by?"<br><small>"+f.instr+": "+esc(x.by)+"</small>":""}${x.notes?"<br><small>"+esc(x.notes)+"</small>":""}${x.date<today?`<br><small style="color:#b00">${f.late}</small>`:""}<br><button class="card" data-ok="${x.id}" style="margin-top:6px">${f.markDone}</button> <button class="back" data-d="${x.id}">${f.del}</button></div>`).join(""):""}
+ <h3>${f.status}</h3>${last||"<p>"+f.none+"</p>"}
+ <h3>${f.hist}</h3>`+[...L_].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(x=>`<div class="detail" style="margin-bottom:8px"><b>${x.date}</b> · ${esc(x.plot)} · ${esc(x.crop)}<br>${esc(tyl(x))}${x.product?": "+esc(x.product):""}${x.dose?" · "+esc(x.dose):""}${x.by?"<br><small>"+f.instr+": "+esc(x.by)+"</small>":""}${x.notes?"<br><small>"+esc(x.notes)+"</small>":""}<br><button class="back" data-d="${x.id}">${f.del}</button></div>`).join("")+(L_.length?`<button class="card" id="lx" style="width:100%">${f.export}</button>`:"")+`<p class="note">${f.local}</p>`;
+ lk.onchange=()=>{lbw.style.display=lk.value==="ins"?"block":"none";ldt.textContent=lk.value==="ins"?f.dueDate:f.date;la.textContent=lk.value==="ins"?f.saveIns:f.save};
+ fb.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>{const a=lg(),x=a.find(y=>y.id==b.dataset.ok);if(x){x.kind="done";x.date=today;x.notes=(x.notes?x.notes+" · ":"")+f.doneNote;sv(a);flog()}});
+ la.onclick=()=>{if(!lp.value.trim()||!lc.value.trim()){alert(f.need);return}const a=lg();a.push({kind:lk.value,by:lb.value.trim(),id:Date.now(),plot:lp.value.trim(),crop:lc.value.trim(),date:ld.value,ti:+lt.value,type:FS.he.types[+lt.value],product:lm.value.trim(),dose:ls.value.trim(),notes:ln.value.trim()});sv(a);flog()};
+ fb.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{if(confirm(f.confirm)){sv(lg().filter(x=>x.id!=b.dataset.d));flog()}});
+ if(window.lx)lx.onclick=()=>{const q=v=>'"'+String(v||"").replace(/"/g,'""')+'"';const csv="﻿"+[f.csvH,...lg().map(x=>[x.date,x.plot,x.crop,(x.kind==="ins"?f.ins:"")+tyl(x),x.product,x.dose,(x.by?f.instr+" "+x.by+". ":"")+x.notes].map(q).join(","))].join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="farm-log.csv";a.click()}}
+function fask(){const f=FSx();fb.innerHTML=`<div class="detail"><h3>${f.askT}</h3><p class="note">${f.askNote}</p><textarea id="aq" rows="4" style="width:100%;padding:8px;font:inherit" placeholder="${f.askPh}"></textarea><button class="card" id="ab" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${f.askBtn}</button><div id="ao" class="ilan" style="display:none;white-space:pre-wrap"></div><p class="note">${f.askKey}</p></div>`;
+ ab.onclick=async()=>{let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k){alert(f.askNoKey);return}if(!aq.value.trim())return;
+  ao.style.display="block";ao.innerHTML='<span class="spin"></span>'+f.think;ab.disabled=true;
+  try{ao.textContent=await gem(k,[{text:f.askPrompt+aq.value.trim()}],n=>ao.innerHTML=`<span class="spin"></span>${f.think} (${n})`)}catch(e){ao.textContent=f.err+e.message}ab.disabled=false}}
 // Update when Google retires a model. All are tried in parallel; first answer wins.
 const GEM_MODELS=["models/gemini-3.5-flash","models/gemini-3.6-flash","models/gemini-3.5-flash-lite","models/gemini-3.8-flash"];
 async function gem(k,parts,st,only){const B="https://generativelanguage.googleapis.com/v1beta/",ctl=new AbortController(),names=only||GEM_MODELS;st(names.map(n=>n.replace("models/","")).join(" / "));
@@ -109,7 +119,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();home();
-const VER="v25";
+const VER="v26";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>

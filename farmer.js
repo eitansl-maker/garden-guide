@@ -1,7 +1,11 @@
 // סעיף לחקלאים. כל פריט נלקח ממסמך מקור מצוין בלבד. אין כאן המלצות ריסוס כלליות:
 // תכשירי הדברה: רק לפי מסמכי המקור, ותמיד לפי התווית ויועץ שה"ם / רשימת התכשירים המורשים העדכנית.
 window.FARM = [
- {id:"strawberry",emoji:"🍓",title:"תות שדה בחממה (תות תלוי, הנבה מוקדמת)",
+ {id:"strawberry",en:{title:"Greenhouse strawberries (hanging system, early production)",srcName:"Northern R&D summary report, early-production strawberries 2021-22",note:"Research trial data, not a general recommendation for every plot.",sections:[
+ {h:"Timing",l:["Daughter plants (cuttings) prepared 1.9.21, rooted about three weeks in a walk-in tunnel under shade net.","Planted in the greenhouse (hanging system) on 28.9.21.","First selective harvest: 15.11.21."]},
+ {h:"Varieties tested",l:["415, 472, 270, 6050, 6056, 6059, 6062, Aya.","Varieties 6059 and 472: over 10 tons per dunam marketable. Variety 270 stood out for quality."]},
+ {h:"Fertilization",l:["Rooting: 6-6-6 fertilizer, about 70 mg nitrogen per liter.","In the greenhouse: Mor 4:2.5:6+6 fertilizer with magnesium (0.5%) and calcium (2%).","Concentration: from 70 to 100 mg/L within about two weeks, then 120-150 mg/L nitrogen."]},
+ {h:"Sprays (as done in the trial)",l:["Regalis (prohexadione-calcium) on mother plants before rooting: 1.5 or 3 g per liter, two sprays a week apart, with a surfactant.","Early November: sulfur vaporizers in the greenhouse."]}]},emoji:"🍓",title:"תות שדה בחממה (תות תלוי, הנבה מוקדמת)",
   src:{name:"דוח סיכום מו\"פ צפון, תות הנבה מוקדמת 2021-22",url:"https://www.moprn.org/sites/default/files/research/file/%D7%AA%D7%95%D7%AA%20%D7%94%D7%A0%D7%91%D7%94%20%D7%9E%D7%95%D7%A7%D7%93%D7%9E%D7%AA21-22.pdf"},
   note:"נתוני ניסוי מחקרי, לא המלצה כללית לכל חלקה.",
   sections:[
@@ -9,14 +13,21 @@ window.FARM = [
    {h:"זנים שנבדקו",l:["415, 472, 270, 6050, 6056, 6059, 6062, איה.","זן 6059 ו-472: מעל 10 טון לדונם משווק. זן 270: בלט באיכות."]},
    {h:"דישון",l:["השרשה: דשן 6-6-6, כ-70 מ\"ג חנקן לליטר.","בחממה: דשן מור 4:2.5:6+6 עם מגנזיום (0.5%) וקלציום (2%).","ריכוז: מ-70 ל-100 מ\"ג/ל' תוך כשבועיים, ובהמשך 120-150 מ\"ג/ל' חנקן."]},
    {h:"ריסוסים (כפי שבוצעו בניסוי)",l:["רגאליס (פרוהקסדיון-סידן) על צמחי אם לפני ההשרשה: 1.5 או 3 גרם לליטר, שני ריסוסים בהפרש שבוע, עם חומר משטח.","תחילת נובמבר: מאיידי גופרית בחממה."]}]},
- {id:"wheat",emoji:"🌾",title:"חיטה, שעורה וקטניות לחורף (גידולי שדה)",
+ {id:"wheat",en:{title:"Winter wheat, barley and legumes (field crops)",srcName:"Winter sowing guidelines 2019-20, Extension Service (Central District)",note:"This document is from 2019-20. Check it fits the current season before use.",sections:[
+ {h:"Wheat",l:["Do not sow before 15 November. Good emergence: late November to 10 December.","Sowing order: from late varieties (Ariel, Rota, Shoham, Galil) to early ones (Gedera).","Target: 200-250 plants per m². Sowing depth 2-4 cm.","Disinfected seed against diseases and seed coating against early pests (Mursalia, flea beetle, root aphids). Products named: Celest Top, Centurion and similar.","Nitrogen: about 12 units in total, 6-8 as base, up to 3 in the furrow. Top dressing by plant tests at 3-4 leaves.","Phosphorus: 12 units by 20 cm soil test, place deep."]},
+ {h:"Barley",l:["Sow last, early December. Depth 2-4 cm.","Rate: Naga and Maanit about 7 kg/dunam, Sagiv about 9, variety 601 about 8.","Naga and Maanit are susceptible to net blotch."]},
+ {h:"Oats and legumes",l:["Oats (Saia 4/6): late November to mid December, 5-6 kg/dunam.","Vetch: December, 7-8 kg/dunam. Tabor clover: December to early January, shallow 1-2 cm, 2.5-3.5 kg/dunam."]}]},emoji:"🌾",title:"חיטה, שעורה וקטניות לחורף (גידולי שדה)",
   src:{name:"הנחיות גידול לזריעות חורף 2019-20, שירות ההדרכה והמקצוע (מחוז המרכז)",url:"https://falcha.co.il/wp-content/uploads/2024/11/הנחיות-גידול-לקראת-זריעות-חורף-2019-2020-1.pdf"},
   note:"המסמך משנת 2019-20. לבדוק התאמה לעונה הנוכחית לפני שימוש.",
   sections:[
    {h:"חיטה",l:["לא להקדים זריעה לפני 15 בנובמבר. הצצה טובה: סוף נובמבר עד 10 בדצמבר.","סדר זריעה: מזני אפיל (אריאל, רותה, שוהם, גליל) ועד בכיר (גדרה).","יעד: 200-250 צמחים למ\"ר. עומק זריעה 2-4 ס\"מ.","זרעים מחוטאים נגד מחלות ועיטוי נגד מזיקי תחילת הגידול (מרסוליה, חיפושית פרעושית, כנימות שורש). תכשירים שצוינו: סלסט טופ, סנטרינו ודומיהם.","חנקן: כ-12 יחידות בסך הכול, 6-8 ביסוד, בחריץ עד 3. דישון ראש לפי בדיקת צמחים ב-3-4 עלים.","זרחן: 12 ח\"מ בבדיקה לעומק 20 ס\"מ, להטמין עמוק."]},
    {h:"שעורה",l:["זריעה בשלב האחרון, תחילת דצמבר. עומק 2-4 ס\"מ.","שיעור: נגה ומענית כ-7 ק\"ג/ד', שגיב כ-9, זן 601 כ-8.","נגה ומענית רגישים למחלת הרשת."]},
    {h:"שיבולת שועל וקטניות",l:["שיבולת שועל (סאיה 4/6): סוף נובמבר עד אמצע דצמבר, 5-6 ק\"ג/ד'.","בקיה: דצמבר, 7-8 ק\"ג/ד'. תלתן תבור: דצמבר עד תחילת ינואר, זריעה שטחית 1-2 ס\"מ, 2.5-3.5 ק\"ג/ד'."]}]},
- {id:"cucumber-gh",emoji:"🥒",title:"מלפפונים בבית צמיחה: גידול והגנת הצומח",
+ {id:"cucumber-gh",en:{title:"Greenhouse cucumbers: growing and crop protection",srcName:"Ministry Plant Protection and Vegetables Division, updated June 2024",note:"Product names as they appear in the guide. Before use: check the label, the current approved-products list and an extension officer.",sections:[
+ {h:"Growing",l:["2-3 growing cycles a year, varieties by season (winter, spring, summer, autumn).","Separate rows: 130-150 cm between rows, 30-33 cm between plants. Paired rows: 180 cm between pairs.","Plant density: at least 2,500 plants per dunam, up to 2,800 with good ventilation and in dry seasons.","A dripper next to each plant, avoid excess moisture, tensiometers recommended.","Compost 3-4 m³ per dunam once a year, supplementary fertilizer by soil tests."]},
+ {h:"Pests (as in the guide)",l:["Red spider mite: adulticides and ovicides, oils, predatory mites (Persimilis, Californicus).","Tobacco thrips: several approved products, effectiveness has declined.","Tobacco whitefly: oils, Metronome Prime, virus-tolerant varieties.","Broad mite: abamectin. Cucurbit fly: Confidor, Decis."]},
+ {h:"Diseases",l:["Downy mildew: cymoxanil (Mancor) as curative, resistance inducers (Aliette, Canon, Kip).","Powdery mildew: products from several groups, Volum as drench.","Fusarium: drench from 7-10 days after planting, every two weeks, 3-5 treatments.","Bacterial diseases: copper at reduced dose.","Viruses (CGMMV, CYSDV, CMV, ZYMV): no chemical treatment, tool disinfection and tolerant varieties."]},
+ {h:"Soil",l:["Nematodes: Condor (1,3-dichloropropene). Soil diseases and weeds: metam sodium.","5 days wait between metam sodium and Condor. In winter below 15°C metam sodium is not recommended."]}]},emoji:"🥒",title:"מלפפונים בבית צמיחה: גידול והגנת הצומח",
   src:{name:"שה\"מ, הגנת הצומח ואגף הירקות, עדכון יוני 2024",url:"https://www.moprn.org/sites/default/files/article/attchment/%D7%93%D7%A4%D7%95%D7%9F%20%D7%9C%D7%92%D7%99%D7%93%D7%95%D7%9C%20%D7%9E%D7%9C%D7%A4%D7%A4%D7%95%D7%9F%D7%A9%D7%94%D7%9E.pdf"},
   note:"שמות תכשירים כפי שמופיעים במדריך. לפני שימוש: התווית, רשימת התכשירים המורשים העדכנית וייעוץ שה\"ם.",
   sections:[
