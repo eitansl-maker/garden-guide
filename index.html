@@ -1,6 +1,6 @@
 <!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>הגינה של אילן</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#3f6b2d">
+<title>הגינה של אילן</title><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#3f6b2d">
 <style>
 :root{--g:#3f6b2d;--bg:#f6f2e8;--c:#fff;--t:#2b2b25}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--t)}
@@ -41,7 +41,7 @@ function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diag
    const names=[...all.filter(n=>!/lite|preview/.test(n)).sort().reverse(),...all.filter(n=>/preview/.test(n)&&!/lite/.test(n)).sort().reverse(),...all.filter(n=>/lite/.test(n)).sort().reverse()];
    if(!names.length)throw new Error("no model");
    let res,last="";
-   outer:for(const n of names.slice(0,6)){for(let a=0;a<2;a++){out.textContent=t.diagWait+" ("+n.replace("models/","")+")";const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(20000),body:JSON.stringify({contents:[{parts:[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}]}]})}).catch(e=>({status:599,json:async()=>({error:{message:"timeout, trying next model"}})}));res=await r.json();if(!res.error)break outer;last=res.error.message;if(!/demand|overload|unavailable|try again|quota|rate|timeout/i.test(last)&&r.status<500&&r.status!==429)break outer;if(r.status===599)break;await new Promise(z=>setTimeout(z,1500))}}
+   outer:for(const n of names.slice(0,6)){for(let a=0;a<1;a++){out.textContent=t.diagWait+" ("+n.replace("models/","")+")";const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(8000),body:JSON.stringify({contents:[{parts:[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}]}]})}).catch(e=>({status:599,json:async()=>({error:{message:"timeout"}})}));res=await r.json();if(!res.error)break outer;last=res.error.message;if(!/demand|overload|unavailable|try again|quota|rate|timeout/i.test(last)&&r.status<500&&r.status!==429)break outer;if(r.status===599)break;await new Promise(z=>setTimeout(z,1500))}}
    if(res.error)throw new Error(last);
    out.textContent=(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?"}catch(e){out.textContent=t.diagErr+" "+e.message}
   ai.disabled=false};
@@ -50,8 +50,9 @@ function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diag
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:q,title:t.tabDiag});return}catch(e){if(e.name==="AbortError")return}}
   alert(t.diagFallback)}}
 function setLang(x){L=x;try{localStorage.setItem("lang",x)}catch(e){}head();tabs();TAB=="farm"?farm():TAB=="diag"?diag():home()}
+let DP=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();DP=e;const b=document.getElementById("inst");if(b)b.style.display="block"});
 function head(){const t=T();document.documentElement.lang=L;document.documentElement.dir=t.dir;document.title=t.title;
- document.getElementById("hd").innerHTML=`<button class="lang" id="lg">${t.other}</button><h1>🌿 ${t.title}</h1><p>${t.sub}</p>`;
+ document.getElementById("hd").innerHTML=`<button class="lang" id="lg">${t.other}</button><h1>🌿 ${t.title}</h1><p>${t.sub}</p><button class="lang" id="inst" style="display:${DP?"block":"none"};margin:8px 0 0">📲 ${t.install}</button>`;inst.onclick=async()=>{if(DP){DP.prompt();DP=null;inst.style.display="none"}};
  document.getElementById("lg").onclick=()=>setLang(L==="he"?"en":"he")}
 function home(){const t=T(),now=CROPS.filter(c=>c.months.includes(m));
  app.innerHTML=`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
