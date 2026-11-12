@@ -61,12 +61,10 @@ function fask(){fb.innerHTML=`<div class="detail"><h3>💬 שאל יועץ</h3><
   ao.style.display="block";ao.innerHTML='<span class="spin"></span>חושב...';ab.disabled=true;
   const q="אתה יועץ חקלאי בישראל שמסייע לחקלאים. ענה בעברית קצרה וברורה, מעשית. אם לא בטוח, אמור זאת ומה לבדוק. אל תמליץ על מינוני חומרי הדברה, הפנה לתווית התכשיר וליועץ שה\"ם. שאלה: "+aq.value.trim();
   try{ao.textContent=await gem(k,[{text:q}],n=>ao.innerHTML=`<span class="spin"></span>חושב... (${n})`)}catch(e){ao.textContent="שגיאה: "+e.message}ab.disabled=false}}
+// Update when Google retires a model. Order = preference, no lookup call (saves time).
+const GEM_MODELS=["models/gemini-3.8-flash","models/gemini-flash-latest"];
 async function gem(k,parts,st){const B="https://generativelanguage.googleapis.com/v1beta/";
- const ms=await(await fetch(B+"models?pageSize=200&key="+k,{signal:AbortSignal.timeout(15000)})).json();if(ms.error)throw new Error(ms.error.message);
- const ver=n=>{const m=n.match(/gemini-(\d+)(?:\.(\d+))?/);return m?+m[1]*100+(+m[2]||0):0};
- const all=(ms.models||[]).filter(x=>(x.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(x.name)&&!/image|tts|live|exp|thinking|audio|robotics|computer|embedding/.test(x.name)).map(x=>x.name);
- const rank=n=>(/lite/.test(n)?-1000:0)+(/preview/.test(n)?-50:0)+ver(n);
- const names=all.sort((a,b)=>rank(b)-rank(a)).slice(0,4);if(!names.length)throw new Error("no model");
+ const names=GEM_MODELS;
  let last="";for(const n of names){st(n.replace("models/",""));
   const r=await fetch(B+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify(Object.assign({contents:[{parts}]},/gemini-2\.5-flash$/.test(n)?{generationConfig:{thinkingConfig:{thinkingBudget:0}}}:{}))}).catch(()=>null);
   const res=r?await r.json().catch(()=>({error:{message:"bad response"}})):{error:{message:"timeout"}};
