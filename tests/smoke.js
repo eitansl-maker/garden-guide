@@ -34,6 +34,7 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   // diagnosis (with overload on 3.5-flash -> others win)
   mode='overload';await p.click('#t3');await p.setInputFiles('#ph',path.resolve(__dirname,'..','icon-192.png'));await p.click('#ai');await p.waitForTimeout(800);
   ok((await p.innerText('#out')).includes('MOCK-ANSWER'),lang+': diagnosis returns despite one model overloaded');
+  await p.fill('#fq','follow');await p.click('#fs');await p.waitForTimeout(800);ok((await p.innerText('#fl')).includes('MOCK-ANSWER'),lang+': follow-up chat answers');
   // advisor
   await p.click('#t2');await p.click('[data-f=ask]');await p.fill('#aq','q');await p.click('#ab');await p.waitForTimeout(500);ok((await p.innerText('#ao')).includes('MOCK-ANSWER'),lang+': advisor answers');
   ok(errs.length===0,lang+': no page errors '+errs.join(';'));await ctx.close()}
