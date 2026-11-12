@@ -25,7 +25,7 @@ nav{display:flex;gap:8px;padding:10px 16px 0;max-width:560px;margin:auto}nav but
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
 const T=()=>I18N[L],crop=c=>L==="he"?c:Object.assign({},c,T().crops[c.id]);
-let TAB="home";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="home"?"on":""}" id="t1">${t.tabHome}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button>`;t3.onclick=()=>{TAB="diag";tabs();diag()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
+let TAB="home";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="home"?"on":""}" id="t1">${t.tabHome}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button>`;t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
 let FT="log";
 const TYPES=["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"];
 const lg=()=>{try{return JSON.parse(localStorage.getItem("flog")||"[]")}catch(e){return[]}};
@@ -87,7 +87,8 @@ function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diag
   ai.disabled=false};
 
 }
-function setLang(x){L=x;try{localStorage.setItem("lang",x)}catch(e){}head();tabs();TAB=="farm"?farm():TAB=="diag"?diag():home()}
+function help(){const t=T();app.innerHTML=`<div class="detail"><h3>🔑 ${t.helpTitle}</h3><p>${t.helpWhy}</p><ol>${t.helpSteps.map(x=>`<li style="margin:8px 0">${x}</li>`).join("")}</ol><p><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;background:var(--g);color:#fff">${t.helpOpen}</a></p><p class="note">${t.helpSafe}</p><h4>${t.helpFaq}</h4><ul>${t.helpQ.map(x=>`<li style="margin:6px 0">${x}</li>`).join("")}</ul></div>`}
+function setLang(x){L=x;try{localStorage.setItem("lang",x)}catch(e){}head();tabs();TAB=="farm"?farm():TAB=="diag"?diag():TAB=="help"?help():home()}
 let DP=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();DP=e;const b=document.getElementById("inst");if(b)b.style.display="block"});
 function head(){const t=T();document.documentElement.lang=L;document.documentElement.dir=t.dir;document.title=t.title;
  document.getElementById("hd").innerHTML=`<button class="lang" id="lg">${t.other}</button><h1>🌿 ${t.title}</h1><p>${t.sub}</p><button class="lang" id="inst" style="display:${DP?"block":"none"};margin:8px 0 0">📲 ${t.install}</button>`;inst.onclick=async()=>{if(DP){DP.prompt();DP=null;inst.style.display="none"}};
@@ -106,7 +107,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();home();
-const VER="v20";
+const VER="v21";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
