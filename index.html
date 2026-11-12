@@ -1,0 +1,41 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הגינה של אילן</title><link rel="manifest" href="manifest.json"><meta name="theme-color" content="#3f6b2d">
+<style>
+:root{--g:#3f6b2d;--bg:#f6f2e8;--c:#fff;--t:#2b2b25}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--t)}
+header{background:var(--g);color:#fff;padding:16px}h1{margin:0;font-size:22px}header p{margin:4px 0 0;opacity:.9;font-size:14px}
+main{padding:16px;max-width:560px;margin:auto}h2{font-size:18px;margin:18px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:var(--c);border:0;border-radius:14px;padding:14px;text-align:center;font:inherit;box-shadow:0 1px 3px #0002;cursor:pointer}
+.card .e{font-size:34px}.card b{display:block;margin-top:4px}
+.detail{background:var(--c);border-radius:14px;padding:16px;box-shadow:0 1px 3px #0002}
+.detail h3{margin:0 0 8px}.row{margin:10px 0}.row small{color:var(--g);font-weight:700;display:block}
+.back{background:none;border:0;color:var(--g);font:inherit;margin-bottom:8px;cursor:pointer}
+.ilan{background:#eef4e6;border-radius:10px;padding:10px;margin-top:10px}
+.draft{font-size:12px;color:#8a6d00;margin-top:16px}
+</style></head><body>
+<header><h1>🌿 הגינה של אילן</h1><p>מה לזרוע, כמה להשקות ולמה. בעברית, בישראל.</p></header>
+<main id="app"></main>
+<script src="crops.js"></script>
+<script>
+const MN=["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+const app=document.getElementById("app");const m=new Date().getMonth()+1;
+function home(){
+ const now=CROPS.filter(c=>c.months.includes(m));
+ app.innerHTML=`<h2>לזרוע עכשיו (${MN[m-1]})</h2>`+(now.length?grid(now):"<p>אין גידולים מתאימים החודש בדוגמה.</p>")+`<h2>כל הגידולים</h2>`+grid(CROPS)+`<p class="draft">תוכן טיוטה לדוגמה, טרם אומת.</p>`;
+ app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id));
+}
+function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${c.name}</b></button>`).join("")+`</div>`}
+function show(id){const c=CROPS.find(x=>x.id==id);
+ app.innerHTML=`<button class="back" id="b">← חזרה</button><div class="detail"><h3>${c.emoji} ${c.name}</h3>
+ <div class="row"><small>מתי זורעים</small>${c.months.map(x=>MN[x-1]).join(", ")}</div>
+ <div class="row"><small>איך משקים</small>${c.water}</div>
+ <div class="row"><small>למה ככה</small>${c.why}</div>
+ <div class="row"><small>שמש</small>${c.sun}</div>
+ <div class="row"><small>קטיף</small>${c.harvest}</div>
+ <div class="ilan">👨‍🌾 <b>הטיפ של אילן:</b> ${c.tips}</div></div>`;
+ document.getElementById("b").onclick=home;scrollTo(0,0)}
+home();
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
+</script></body></html>
