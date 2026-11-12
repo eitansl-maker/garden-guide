@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="crops.js?v=26"></script><script src="farmer.js?v=26"></script><script src="i18n.js?v=26"></script>
+<script src="crops.js?v=27"></script><script src="farmer.js?v=27"></script><script src="i18n.js?v=27"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -103,7 +103,8 @@ function about(){const t=T();app.innerHTML=`<div class="detail"><h3>👨‍🌾 
 function setLang(x){L=x;try{localStorage.setItem("lang",x)}catch(e){}head();tabs();TAB=="farm"?farm():TAB=="diag"?diag():TAB=="help"?help():TAB=="about"?about():home()}
 let DP=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();DP=e;const b=document.getElementById("inst");if(b)b.style.display="block"});
 function head(){const t=T();document.documentElement.lang=L;document.documentElement.dir=t.dir;document.title=t.title;
- document.getElementById("hd").innerHTML=`<button class="lang" id="lg">${t.other}</button><h1>🌿 ${t.title}</h1><p>${t.sub}</p><button class="lang" id="inst" style="display:${DP?"block":"none"};margin:8px 0 0">📲 ${t.install}</button>`;inst.onclick=async()=>{if(DP){DP.prompt();DP=null;inst.style.display="none"}};
+ document.getElementById("hd").innerHTML=`<div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px"><button class="lang" id="sh" style="margin:0">📤 ${t.share}</button><button class="lang" id="lg" style="margin:0">${t.other}</button></div><h1>🌿 ${t.title}</h1><p>${t.sub}</p><button class="lang" id="inst" style="display:${DP?"block":"none"};margin:8px 0 0">📲 ${t.install}</button>`;inst.onclick=async()=>{if(DP){DP.prompt();DP=null;inst.style.display="none"}};
+ document.getElementById("sh").onclick=async()=>{const u="https://eitansl-maker.github.io/garden-guide/",tx=T().shareText;try{if(navigator.share){await navigator.share({title:T().title,text:tx,url:u});return}}catch(e){if(e.name==="AbortError")return}try{await navigator.clipboard.writeText(u);alert(T().copied)}catch(e){prompt(T().copyIt,u)}};
  document.getElementById("lg").onclick=()=>setLang(L==="he"?"en":"he")}
 function home(){const t=T(),now=CROPS.filter(c=>c.months.includes(m));
  app.innerHTML=`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
@@ -119,7 +120,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();home();
-const VER="v26";
+const VER="v27";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
