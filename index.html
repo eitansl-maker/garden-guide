@@ -20,12 +20,12 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="crops.js?v=29"></script><script src="farmer.js?v=29"></script><script src="i18n.js?v=29"></script>
+<script src="crops.js?v=30"></script><script src="farmer.js?v=30"></script><script src="i18n.js?v=30"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
 const T=()=>I18N[L],crop=c=>L==="he"?c:Object.assign({},c,T().crops[c.id]);
-let TAB="home";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="home"?"on":""}" id="t1">${t.tabHome}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button><button class="ab ${TAB=="about"?"on":""}" id="t5">${t.tabAbout}</button>`;t5.onclick=()=>{TAB="about";tabs();about()};t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
+let TAB="diag";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="home"?"on":""}" id="t1">${t.tabHome}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button><button class="ab ${TAB=="about"?"on":""}" id="t5">${t.tabAbout}</button>`;t5.onclick=()=>{TAB="about";tabs();about()};t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
 let FT="log";
 const FS={he:{log:"📒 יומן",ask:"💬 שאל יועץ",guides:"📚 מדריכים",types:["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"],
  newRec:"➕ רישום חדש",kind:"סוג רישום",kDone:"בוצע (עשיתי)",kIns:"הוראת מדריך (לביצוע)",by:"שם המדריך",plot:"חלקה",plotPh:"למשל: חלקה צפונית",crop:"גידול",cropPh:"למשל: תות",date:"תאריך",dueDate:"תאריך לביצוע",type:"סוג טיפול",prod:"חומר / דשן",dose:"מינון / כמות",notes:"הערות",save:"שמור ביומן",saveIns:"שמור הוראה",
@@ -119,8 +119,8 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="row"><small>${t.harvest}</small>${c.harvest}</div>
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
-head();tabs();home();
-const VER="v29";
+head();tabs();diag();
+const VER="v30";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
