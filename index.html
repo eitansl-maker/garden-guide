@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="crops.js?v=31"></script><script src="farmer.js?v=31"></script><script src="i18n.js?v=31"></script>
+<script src="crops.js?v=32"></script><script src="farmer.js?v=32"></script><script src="i18n.js?v=32"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -86,13 +86,20 @@ async function gem(k,parts,st,only){const B="https://generativelanguage.googleap
 async function speedtest(k,out){out.style.display="block";out.innerHTML="";for(const n of GEM_MODELS){out.innerHTML+=`<div>⏳ ${n.replace("models/","")}...</div>`;const t0=Date.now();try{await gem(k,[{text:"ענה במילה אחת: שלום"}],()=>{},[n]);out.lastChild.textContent=`✅ ${n.replace("models/","")}: ${Math.round((Date.now()-t0)/100)/10}s`}catch(e){out.lastChild.textContent=`❌ ${e.message}`}}}
 function prompt_(c){return L==="he"?"אני מגדל בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":"I grow crops in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly in English: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label."}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
-let IMG=null,HIST=[];function diag(){IMG=null;HIST=[];const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><div id="fu" style="display:none;margin-top:10px"><div id="fl"></div><textarea id="fq" rows="2" style="width:100%;padding:8px;font:inherit" placeholder="${t.diagFuPh}"></textarea><button class="card" id="fs" style="width:100%;margin-top:6px">${t.diagFu}</button></div><p class="note" id="nokey"></p><p class="note">${t.diagNote}</p></div>`;
+const rg=()=>{try{return JSON.parse(localStorage.getItem("rem")||"[]")}catch(e){return[]}};
+const rs=a=>{try{localStorage.setItem("rem",JSON.stringify(a))}catch(e){}};
+function remRender(){const t=T(),td=new Date().toISOString().slice(0,10),a=rg().sort((x,y)=>x.d.localeCompare(y.d));
+ rl.innerHTML=a.length?`<h3>⏰ ${t.remTitle}</h3>`+a.map(r=>`<div class="detail" style="margin-bottom:8px;border-inline-start:4px solid ${r.d<=td?"#c98a00":"#9bb88a"}"><b>${r.d}</b>${r.d<td?" · "+t.remLate:""}<br><span class="rt"></span> <button class="back" data-rd="${r.id}">${t.remDone}</button></div>`).join(""):"";
+ [...rl.querySelectorAll(".rt")].forEach((e,i)=>e.textContent=a[i].t);
+ rl.querySelectorAll("[data-rd]").forEach(b=>b.onclick=()=>{rs(rg().filter(x=>x.id!=b.dataset.rd));remRender()})}
+let IMG=null,HIST=[];function diag(){IMG=null;HIST=[];const t=T();app.innerHTML=`<div id="rl"></div><h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><div id="fu" style="display:none;margin-top:10px"><div class="detail" style="margin-bottom:10px"><b>⏰ ${t.remAdd}</b><input id="rt" style="width:100%;padding:8px;font:inherit;margin:6px 0" value="${t.remDef}"><input id="rd" type="date" style="width:100%;padding:8px;font:inherit"><button class="card" id="rb" style="width:100%;margin-top:6px">${t.remSave}</button></div><div id="fl"></div><textarea id="fq" rows="2" style="width:100%;padding:8px;font:inherit" placeholder="${t.diagFuPh}"></textarea><button class="card" id="fs" style="width:100%;margin-top:6px">${t.diagFu}</button></div><p class="note" id="nokey"></p><p class="note">${t.diagNote}</p></div>`;
  let f=null;ph.onchange=()=>{f=ph.files[0];if(f){pv.src=URL.createObjectURL(f);pv.style.display="block";ai.disabled=false}};
  {let k0="";try{k0=localStorage.getItem("gkey")||""}catch(e){}if(!k0){nokey.innerHTML=`<a href="#" id="gh">${t.diagNoKey} ${t.diagGoHelp}</a>`;gh.onclick=e=>{e.preventDefault();TAB="help";tabs();help()}}}
  ai.onclick=async()=>{let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k){TAB="help";tabs();help();return}
   out.style.display="block";out.innerHTML=`<span class="spin"></span>${t.diagWait}`;ai.disabled=true;
   try{IMG=await shrink(f);const q=prompt_(cr.value);const a=await gem(k,[{text:q},{inline_data:{mime_type:"image/jpeg",data:IMG}}],n=>out.innerHTML=`<span class="spin"></span>${t.diagWait} (${n})`);out.textContent=a;HIST=[["",a]];fu.style.display="block";fl.innerHTML=""}catch(e){out.textContent=t.diagErr+" "+e.message}
   ai.disabled=false};
+ {const d=new Date();d.setDate(d.getDate()+7);rd.value=d.toISOString().slice(0,10);remRender();rb.onclick=()=>{if(!rt.value.trim()||!rd.value)return;const c=cr.value.trim();rs(rg().concat({id:Date.now(),d:rd.value,t:(c?c+": ":"")+rt.value.trim()}));remRender();rb.textContent="✔ "+t.remSaved}}
  fs.onclick=async()=>{const q=fq.value.trim();if(!q||!IMG)return;let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k)return;
   const ctx=prompt_(cr.value)+"\n"+HIST.map(h=>(h[0]?(L==="he"?"שאלה: ":"Question: ")+h[0]+"\n":"")+(L==="he"?"תשובה: ":"Answer: ")+h[1]).join("\n")+"\n"+(L==="he"?"שאלת המשך מהמגדל (ענה בקצרה בעברית): ":"Follow-up from the grower (answer briefly): ")+q;
   const d=document.createElement("div");d.className="detail";d.style.margin="8px 0";d.innerHTML=`<b></b><div class="ilan" style="white-space:pre-wrap"><span class="spin"></span>${t.diagWait}</div>`;d.firstChild.textContent=q;fl.appendChild(d);fq.value="";fs.disabled=true;
@@ -124,7 +131,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();diag();
-const VER="v31";
+const VER="v32";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
