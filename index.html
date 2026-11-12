@@ -13,29 +13,33 @@ main{padding:16px;max-width:560px;margin:auto}h2{font-size:18px;margin:18px 0 8p
 .detail h3{margin:0 0 8px}.row{margin:10px 0}.row small{color:var(--g);font-weight:700;display:block}
 .back{background:none;border:0;color:var(--g);font:inherit;margin-bottom:8px;cursor:pointer}
 .ilan{background:#eef4e6;border-radius:10px;padding:10px;margin-top:10px}
+.lang{float:inline-end;margin-top:-34px;background:#fff3;color:#fff;border:1px solid #fff8;border-radius:8px;padding:4px 10px;font:inherit;cursor:pointer}header{overflow:hidden}
 .draft{font-size:12px;color:#8a6d00;margin-top:16px}
 </style></head><body>
-<header><h1>🌿 הגינה של אילן</h1><p>מה לזרוע, כמה להשקות ולמה. בעברית, בישראל.</p></header>
+<header id="hd"></header>
 <main id="app"></main>
-<script src="crops.js"></script>
+<script src="crops.js"></script><script src="i18n.js"></script>
 <script>
-const MN=["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
-const app=document.getElementById("app");const m=new Date().getMonth()+1;
-function home(){
- const now=CROPS.filter(c=>c.months.includes(m));
- app.innerHTML=`<h2>לזרוע עכשיו (${MN[m-1]})</h2>`+(now.length?grid(now):"<p>אין גידולים מתאימים החודש בדוגמה.</p>")+`<h2>כל הגידולים</h2>`+grid(CROPS)+`<p class="draft">תוכן טיוטה לדוגמה, טרם אומת.</p>`;
- app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id));
-}
-function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${c.name}</b></button>`).join("")+`</div>`}
-function show(id){const c=CROPS.find(x=>x.id==id);
- app.innerHTML=`<button class="back" id="b">← חזרה</button><div class="detail"><h3>${c.emoji} ${c.name}</h3>
- <div class="row"><small>מתי זורעים</small>${c.months.map(x=>MN[x-1]).join(", ")}</div>
- <div class="row"><small>איך משקים</small>${c.water}</div>
- <div class="row"><small>למה ככה</small>${c.why}</div>
- <div class="row"><small>שמש</small>${c.sun}</div>
- <div class="row"><small>קטיף</small>${c.harvest}</div>
- <div class="ilan">👨‍🌾 <b>הטיפ של אילן:</b> ${c.tips}</div></div>`;
+let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
+const app=document.getElementById("app"),m=new Date().getMonth()+1;
+const T=()=>I18N[L],crop=c=>L==="he"?c:Object.assign({},c,T().crops[c.id]);
+function setLang(x){L=x;try{localStorage.setItem("lang",x)}catch(e){}head();home()}
+function head(){const t=T();document.documentElement.lang=L;document.documentElement.dir=t.dir;document.title=t.title;
+ document.getElementById("hd").innerHTML=`<h1>🌿 ${t.title}</h1><p>${t.sub}</p><button class="lang" id="lg">${t.other}</button>`;
+ document.getElementById("lg").onclick=()=>setLang(L==="he"?"en":"he")}
+function home(){const t=T(),now=CROPS.filter(c=>c.months.includes(m));
+ app.innerHTML=`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
+ app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id))}
+function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${crop(c).name}</b></button>`).join("")+`</div>`}
+function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
+ app.innerHTML=`<button class="back" id="b">${t.back}</button><div class="detail"><h3>${c.emoji} ${c.name}</h3>
+ <div class="row"><small>${t.when}</small>${c.months.map(x=>t.months[x-1]).join(", ")}</div>
+ <div class="row"><small>${t.water}</small>${c.water}</div>
+ <div class="row"><small>${t.why}</small>${c.why}</div>
+ <div class="row"><small>${t.sun}</small>${c.sun}</div>
+ <div class="row"><small>${t.harvest}</small>${c.harvest}</div>
+ <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
-home();
+head();home();
 if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
 </script></body></html>
