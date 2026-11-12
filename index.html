@@ -60,11 +60,19 @@ function fask(){fb.innerHTML=`<div class="detail"><h3>💬 שאל יועץ</h3><
  ab.onclick=async()=>{let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k){alert("הדבק קודם מפתח Gemini בלשונית 'אבחון בתמונה'.");return}if(!aq.value.trim())return;
   ao.style.display="block";ao.innerHTML='<span class="spin"></span>חושב...';ab.disabled=true;
   const q="אתה יועץ חקלאי בישראל שמסייע לחקלאים. ענה בעברית קצרה וברורה, מעשית. אם לא בטוח, אמור זאת ומה לבדוק. אל תמליץ על מינוני חומרי הדברה, הפנה לתווית התכשיר וליועץ שה\"ם. שאלה: "+aq.value.trim();
-  try{const ms=await(await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key="+k,{signal:AbortSignal.timeout(15000)})).json();if(ms.error)throw new Error(ms.error.message);
-   const all=(ms.models||[]).filter(x=>(x.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(x.name)&&!/image|tts|live|exp|thinking|audio|robotics|computer|preview|lite/.test(x.name)).map(x=>x.name).sort().reverse();
-   const names=[...all.filter(n=>/2\.5-flash$/.test(n)),...all.filter(n=>!/2\.5-flash$/.test(n))].slice(0,3);let res,last="";
-   for(const n of names){ao.innerHTML='<span class="spin"></span>חושב... ('+n.replace("models/","")+")";const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify(Object.assign({contents:[{parts:[{text:q}]}]},/2\.5-flash$/.test(n)?{generationConfig:{thinkingConfig:{thinkingBudget:0}}}:{}))}).catch(()=>({json:async()=>({error:{message:"timeout"}})}));res=await r.json();if(!res.error)break;last=res.error.message}
-   if(res.error)throw new Error(last);ao.textContent=(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?"}catch(e){ao.textContent="שגיאה: "+e.message}ab.disabled=false}}
+  try{ao.textContent=await gem(k,[{text:q}],n=>ao.innerHTML=`<span class="spin"></span>חושב... (${n})`)}catch(e){ao.textContent="שגיאה: "+e.message}ab.disabled=false}}
+async function gem(k,parts,st){const B="https://generativelanguage.googleapis.com/v1beta/";
+ const ms=await(await fetch(B+"models?pageSize=200&key="+k,{signal:AbortSignal.timeout(15000)})).json();if(ms.error)throw new Error(ms.error.message);
+ const ver=n=>{const m=n.match(/gemini-(\d+)(?:\.(\d+))?/);return m?+m[1]*100+(+m[2]||0):0};
+ const all=(ms.models||[]).filter(x=>(x.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(x.name)&&!/image|tts|live|exp|thinking|audio|robotics|computer|embedding/.test(x.name)).map(x=>x.name);
+ const rank=n=>(/lite/.test(n)?-1000:0)+(/preview/.test(n)?-50:0)+ver(n);
+ const names=all.sort((a,b)=>rank(b)-rank(a)).slice(0,4);if(!names.length)throw new Error("no model");
+ let last="";for(const n of names){st(n.replace("models/",""));
+  const r=await fetch(B+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify(Object.assign({contents:[{parts}]},/gemini-2\.5-flash$/.test(n)?{generationConfig:{thinkingConfig:{thinkingBudget:0}}}:{}))}).catch(()=>null);
+  const res=r?await r.json().catch(()=>({error:{message:"bad response"}})):{error:{message:"timeout"}};
+  if(!res.error)return(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?";
+  last=res.error.message;if(/API key|permission|PERMISSION_DENIED/i.test(last)&&!/model/i.test(last))throw new Error(last)}
+ throw new Error(last)}
 function prompt_(w,c){return (L==="he"?"אני ":"I am ")+(w==="f"?(L==="he"?"חקלאי":"a farmer"):(L==="he"?"מגדל בגינה ביתית":"a home gardener"))+(L==="he"?" בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":" in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label.")}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
 function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><label>${t.diagWho}<br><select id="who"><option value="h">${t.home}</option><option value="f">${t.farmer}</option></select></label><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><details class="row"><summary>${t.diagKey}</summary><p class="note">${t.diagKeyHelp}</p><input id="key" type="password" style="width:100%;padding:8px;font:inherit" placeholder="AIza..."><button class="card" id="sk" style="margin-top:6px">${t.save}</button></details><p class="note">${t.diagNote}</p></div>`;
@@ -73,16 +81,7 @@ function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diag
  sk.onclick=()=>{try{localStorage.setItem("gkey",key.value.trim())}catch(e){}alert("OK")};
  ai.onclick=async()=>{const k=key.value.trim();if(!k){alert(t.diagNoKey);document.querySelector("details").open=true;return}
   out.style.display="block";out.innerHTML=`<span class="spin"></span>${t.diagWait}`;ai.disabled=true;
-  try{const img=await shrink(f);const q=prompt_(who.value,cr.value);
-   const ms=(await(await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100&key="+k,{signal:AbortSignal.timeout(15000)})).json());if(ms.error)throw new Error(ms.error.message);
-   const ok=x=>(x.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(x.name)&&!/image|tts|live|exp|thinking|audio|robotics|computer/.test(x.name);
-   const all=(ms.models||[]).filter(ok).map(x=>x.name);
-   const names=[...all.filter(n=>!/lite|preview/.test(n)).sort().reverse(),...all.filter(n=>/preview/.test(n)&&!/lite/.test(n)).sort().reverse(),...all.filter(n=>/lite/.test(n)).sort().reverse()];
-   if(!names.length)throw new Error("no model");
-   let res,last="";
-   outer:for(const n of [...names.filter(n=>/2\.5-flash$/.test(n)),...names.filter(n=>!/2\.5-flash$/.test(n))].slice(0,3)){for(let a=0;a<1;a++){out.innerHTML=`<span class="spin"></span>${t.diagWait} (${n.replace("models/","")})`;const r=await fetch("https://generativelanguage.googleapis.com/v1beta/"+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify(Object.assign({contents:[{parts:[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}]}]},/2\.5-flash$/.test(n)?{generationConfig:{thinkingConfig:{thinkingBudget:0}}}:{}))}).catch(e=>({status:599,json:async()=>({error:{message:"timeout"}})}));res=await r.json();if(!res.error)break outer;last=res.error.message;if(!/demand|overload|unavailable|try again|quota|rate|timeout/i.test(last)&&r.status<500&&r.status!==429)break outer;if(r.status===599)break;await new Promise(z=>setTimeout(z,1500))}}
-   if(res.error)throw new Error(last);
-   out.textContent=(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?"}catch(e){out.textContent=t.diagErr+" "+e.message}
+  try{const img=await shrink(f);const q=prompt_(who.value,cr.value);out.textContent=await gem(k,[{text:q},{inline_data:{mime_type:"image/jpeg",data:img}}],n=>out.innerHTML=`<span class="spin"></span>${t.diagWait} (${n})`)}catch(e){out.textContent=t.diagErr+" "+e.message}
   ai.disabled=false};
 
 }
