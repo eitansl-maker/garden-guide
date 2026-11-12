@@ -61,22 +61,25 @@ function fask(){fb.innerHTML=`<div class="detail"><h3>💬 שאל יועץ</h3><
   ao.style.display="block";ao.innerHTML='<span class="spin"></span>חושב...';ab.disabled=true;
   const q="אתה יועץ חקלאי בישראל שמסייע לחקלאים. ענה בעברית קצרה וברורה, מעשית. אם לא בטוח, אמור זאת ומה לבדוק. אל תמליץ על מינוני חומרי הדברה, הפנה לתווית התכשיר וליועץ שה\"ם. שאלה: "+aq.value.trim();
   try{ao.textContent=await gem(k,[{text:q}],n=>ao.innerHTML=`<span class="spin"></span>חושב... (${n})`)}catch(e){ao.textContent="שגיאה: "+e.message}ab.disabled=false}}
-// Update when Google retires a model. Order = preference, no lookup call (saves time).
-const GEM_MODELS=["models/gemini-3.8-flash","models/gemini-flash-latest"];
-async function gem(k,parts,st){const B="https://generativelanguage.googleapis.com/v1beta/";
- const names=GEM_MODELS;
- let last="";for(const n of names){for(const cfg of [{generationConfig:{thinkingConfig:{thinkingLevel:"low"}}},{}]){st(n.replace("models/",""));const t0=Date.now();
-  const r=await fetch(B+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(30000),body:JSON.stringify(Object.assign({contents:[{parts}]},cfg))}).catch(e=>null);
-  const res=r?await r.json().catch(()=>({error:{message:"bad response"}})):{error:{message:"timeout after "+Math.round((Date.now()-t0)/1000)+"s ("+n.replace("models/","")+")"}};
-  if(!res.error)return(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?";
-  last=res.error.message;if(/API key|permission|PERMISSION_DENIED/i.test(last)&&!/model/i.test(last))throw new Error(last);
-  if(!/thinking|invalid argument|unknown name/i.test(last))break}}
- throw new Error(last)}
+// Update when Google retires a model. All are tried in parallel; first answer wins.
+const GEM_MODELS=["models/gemini-3.8-flash","models/gemini-flash-latest","models/gemini-flash-lite-latest"];
+async function gem(k,parts,st,only){const B="https://generativelanguage.googleapis.com/v1beta/",ctl=new AbortController(),names=only||GEM_MODELS;st(names.map(n=>n.replace("models/","")).join(" / "));
+ const one=async n=>{const t0=Date.now(),nm=n.replace("models/","");
+  for(const cfg of [{generationConfig:{thinkingConfig:{thinkingLevel:"low"}}},{}]){
+   let r;try{r=await fetch(B+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.any([ctl.signal,AbortSignal.timeout(25000)]),body:JSON.stringify(Object.assign({contents:[{parts}]},cfg))})}catch(e){throw new Error(nm+": "+(ctl.signal.aborted?"cancelled":"timeout after "+Math.round((Date.now()-t0)/1000)+"s"))}
+   const res=await r.json().catch(()=>({error:{message:"bad response"}}));
+   if(!res.error){ctl.abort();return{text:(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?",nm,ms:Date.now()-t0}}
+   const m=res.error.message||"";if(/API key|PERMISSION_DENIED/i.test(m)&&!/model/i.test(m)){ctl.abort();throw new Error("KEY: "+m)}
+   if(!/thinking|invalid argument|unknown name/i.test(m))throw new Error(nm+": "+m.slice(0,120))}
+  throw new Error(nm+": failed")};
+ try{const w=await Promise.any(names.map(one));return only?w:w.text}catch(e){const es=(e.errors||[e]).map(x=>x.message);const k_=es.find(x=>/^KEY:/.test(x));throw new Error(k_?k_.slice(5):es.join(" | "))}}
+async function speedtest(k,out){out.style.display="block";out.innerHTML="";for(const n of GEM_MODELS){out.innerHTML+=`<div>⏳ ${n.replace("models/","")}...</div>`;const t0=Date.now();try{await gem(k,[{text:"ענה במילה אחת: שלום"}],()=>{},[n]);out.lastChild.textContent=`✅ ${n.replace("models/","")}: ${Math.round((Date.now()-t0)/100)/10}s`}catch(e){out.lastChild.textContent=`❌ ${e.message}`}}}
 function prompt_(w,c){return (L==="he"?"אני ":"I am ")+(w==="f"?(L==="he"?"חקלאי":"a farmer"):(L==="he"?"מגדל בגינה ביתית":"a home gardener"))+(L==="he"?" בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":" in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label.")}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
-function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><label>${t.diagWho}<br><select id="who"><option value="h">${t.home}</option><option value="f">${t.farmer}</option></select></label><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><details class="row"><summary>${t.diagKey}</summary><p class="note">${t.diagKeyHelp}</p><input id="key" type="password" style="width:100%;padding:8px;font:inherit" placeholder="AIza..."><button class="card" id="sk" style="margin-top:6px">${t.save}</button></details><p class="note">${t.diagNote}</p></div>`;
+function diag(){const t=T();app.innerHTML=`<h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><label>${t.diagWho}<br><select id="who"><option value="h">${t.home}</option><option value="f">${t.farmer}</option></select></label><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><details class="row"><summary>${t.diagKey}</summary><p class="note">${t.diagKeyHelp}</p><input id="key" type="password" style="width:100%;padding:8px;font:inherit" placeholder="AIza..."><button class="card" id="sk" style="margin-top:6px">${t.save}</button> <button class="card" id="st" style="margin-top:6px">בדיקת מהירות</button><div id="so" class="ilan" style="display:none"></div></details><p class="note">${t.diagNote}</p></div>`;
  let f=null;ph.onchange=()=>{f=ph.files[0];if(f){pv.src=URL.createObjectURL(f);pv.style.display="block";ai.disabled=false}};
  try{key.value=localStorage.getItem("gkey")||""}catch(e){}
+ st.onclick=()=>{const k=key.value.trim();if(!k){alert(t.diagNoKey);return}speedtest(k,so)};
  sk.onclick=()=>{try{localStorage.setItem("gkey",key.value.trim())}catch(e){}alert("OK")};
  ai.onclick=async()=>{const k=key.value.trim();if(!k){alert(t.diagNoKey);document.querySelector("details").open=true;return}
   out.style.display="block";out.innerHTML=`<span class="spin"></span>${t.diagWait}`;ai.disabled=true;
@@ -103,7 +106,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();home();
-const VER="v18";
+const VER="v19";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
