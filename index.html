@@ -65,11 +65,12 @@ function fask(){fb.innerHTML=`<div class="detail"><h3>💬 שאל יועץ</h3><
 const GEM_MODELS=["models/gemini-3.8-flash","models/gemini-flash-latest"];
 async function gem(k,parts,st){const B="https://generativelanguage.googleapis.com/v1beta/";
  const names=GEM_MODELS;
- let last="";for(const n of names){st(n.replace("models/",""));
-  const r=await fetch(B+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(15000),body:JSON.stringify(Object.assign({contents:[{parts}]},/gemini-2\.5-flash$/.test(n)?{generationConfig:{thinkingConfig:{thinkingBudget:0}}}:{}))}).catch(()=>null);
-  const res=r?await r.json().catch(()=>({error:{message:"bad response"}})):{error:{message:"timeout"}};
+ let last="";for(const n of names){for(const cfg of [{generationConfig:{thinkingConfig:{thinkingLevel:"low"}}},{}]){st(n.replace("models/",""));const t0=Date.now();
+  const r=await fetch(B+n+":generateContent?key="+k,{method:"POST",headers:{"Content-Type":"application/json"},signal:AbortSignal.timeout(30000),body:JSON.stringify(Object.assign({contents:[{parts}]},cfg))}).catch(e=>null);
+  const res=r?await r.json().catch(()=>({error:{message:"bad response"}})):{error:{message:"timeout after "+Math.round((Date.now()-t0)/1000)+"s ("+n.replace("models/","")+")"}};
   if(!res.error)return(res.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")||"?";
-  last=res.error.message;if(/API key|permission|PERMISSION_DENIED/i.test(last)&&!/model/i.test(last))throw new Error(last)}
+  last=res.error.message;if(/API key|permission|PERMISSION_DENIED/i.test(last)&&!/model/i.test(last))throw new Error(last);
+  if(!/thinking|invalid argument|unknown name/i.test(last))break}}
  throw new Error(last)}
 function prompt_(w,c){return (L==="he"?"אני ":"I am ")+(w==="f"?(L==="he"?"חקלאי":"a farmer"):(L==="he"?"מגדל בגינה ביתית":"a home gardener"))+(L==="he"?" בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":" in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label.")}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
