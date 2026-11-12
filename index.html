@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="crops.js?v=32"></script><script src="farmer.js?v=32"></script><script src="i18n.js?v=32"></script>
+<script src="crops.js?v=33"></script><script src="farmer.js?v=33"></script><script src="i18n.js?v=33"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -102,7 +102,7 @@ let IMG=null,HIST=[];function diag(){IMG=null;HIST=[];const t=T();app.innerHTML=
  {const d=new Date();d.setDate(d.getDate()+7);rd.value=d.toISOString().slice(0,10);remRender();rb.onclick=()=>{if(!rt.value.trim()||!rd.value)return;const c=cr.value.trim();rs(rg().concat({id:Date.now(),d:rd.value,t:(c?c+": ":"")+rt.value.trim()}));remRender();rb.textContent="✔ "+t.remSaved}}
  fs.onclick=async()=>{const q=fq.value.trim();if(!q||!IMG)return;let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k)return;
   const ctx=prompt_(cr.value)+"\n"+HIST.map(h=>(h[0]?(L==="he"?"שאלה: ":"Question: ")+h[0]+"\n":"")+(L==="he"?"תשובה: ":"Answer: ")+h[1]).join("\n")+"\n"+(L==="he"?"שאלת המשך מהמגדל (ענה בקצרה בעברית): ":"Follow-up from the grower (answer briefly): ")+q;
-  const d=document.createElement("div");d.className="detail";d.style.margin="8px 0";d.innerHTML=`<b></b><div class="ilan" style="white-space:pre-wrap"><span class="spin"></span>${t.diagWait}</div>`;d.firstChild.textContent=q;fl.appendChild(d);fq.value="";fs.disabled=true;
+  const d=document.createElement("div");d.className="detail";d.style.margin="8px 0";d.innerHTML=`<b></b><div class="ilan" style="white-space:pre-wrap"><span class="spin"></span>${t.diagWait}</div>`;d.firstChild.textContent=q;{let o=document.getElementById("oh");const prev=[...fl.children].filter(x=>x.id!=="oh");if(prev.length){if(!o){o=document.createElement("details");o.id="oh";o.style.margin="8px 0";o.innerHTML=`<summary style="cursor:pointer;color:var(--g)">${t.prevChat}</summary>`;fl.prepend(o)}prev.forEach(x=>o.appendChild(x))}}fl.appendChild(d);fq.value="";fs.disabled=true;HIST=HIST.slice(-5);
   try{const a=await gem(k,[{text:ctx},{inline_data:{mime_type:"image/jpeg",data:IMG}}],()=>{});HIST.push([q,a]);d.lastChild.textContent=a}catch(e){d.lastChild.textContent=t.diagErr+" "+e.message}fs.disabled=false};
 
 }
@@ -131,7 +131,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();tabs();diag();
-const VER="v32";
+const VER="v33";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>

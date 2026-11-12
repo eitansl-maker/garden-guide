@@ -35,6 +35,7 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   mode='overload';await p.click('#t3');await p.setInputFiles('#ph',path.resolve(__dirname,'..','icon-192.png'));await p.click('#ai');await p.waitForTimeout(800);
   ok((await p.innerText('#out')).includes('MOCK-ANSWER'),lang+': diagnosis returns despite one model overloaded');
   await p.fill('#fq','follow');await p.click('#fs');await p.waitForTimeout(800);ok((await p.innerText('#fl')).includes('MOCK-ANSWER'),lang+': follow-up chat answers');
+  await p.fill('#fq','f2');await p.click('#fs');await p.waitForTimeout(600);await p.fill('#fq','f3');await p.click('#fs');await p.waitForTimeout(600);ok(await p.locator('#fl > .detail').count()===1&&await p.locator('#oh').count()===1,lang+': older chat folded');
   await p.click('#rb');ok(await p.locator('[data-rd]').count()===1,lang+': reminder saved');await p.click('[data-rd]');ok(await p.locator('[data-rd]').count()===0,lang+': reminder marked done');
   // advisor
   await p.click('#t2');await p.click('[data-f=ask]');await p.fill('#aq','q');await p.click('#ab');await p.waitForTimeout(500);ok((await p.innerText('#ao')).includes('MOCK-ANSWER'),lang+': advisor answers');
