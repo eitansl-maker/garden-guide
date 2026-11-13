@@ -3,7 +3,7 @@ let fails=0;const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
 const mem={};global.localStorage={getItem:k=>k in mem?mem[k]:null,setItem:(k,v)=>{mem[k]=v}};
 global.window=global;global.location={origin:'https://x.test',pathname:'/g/'};
 require('../sync.js');
-function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],profiles:[{id:'u1',country:'DK',domains:['pets']}]};let n=0;
+function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],tombstones:[],profiles:[{id:'u1',country:'DK',domains:['pets']}]};let n=0;
  const from=t=>{let op='select',f=[],pl=null;
   const b={select(){return b},eq(c,v){f.push(r=>r[c]===v);return b},in(c,vs){f.push(r=>vs.includes(r[c]));return b},
    insert(p){op='insert';pl=[].concat(p);return b},upsert(p){op='upsert';pl=[].concat(p);return b},delete(){op='delete';return b},update(p){op='update';pl=p;return b},
@@ -42,6 +42,10 @@ function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],profiles:
  // local delete propagates
  const victim=l.find(x=>x.kind==='ins');S.markDeleted('flogdel',victim.rid);localStorage.setItem('flog',JSON.stringify(l.filter(x=>x!==victim)));
  await S.sync();ok(!c.db.events.some(e=>e.id===victim.rid),'deleted entry removed in cloud');
+ // another device still has the deleted entry: it must not come back
+ ok(c.db.tombstones.some(x=>x.item_id===victim.rid&&x.kind==='event'),'deletion recorded as a tombstone');
+ localStorage.setItem('flog',JSON.stringify([...JSON.parse(localStorage.getItem('flog')),victim]));
+ await S.sync();ok(!c.db.events.some(e=>e.id===victim.rid)&&!JSON.parse(localStorage.getItem('flog')).some(x=>x.rid===victim.rid),'stale device does not resurrect a deleted entry');
  // pets entries live in a pets space; same name as a plot does not collide
  localStorage.setItem('flog',JSON.stringify([...JSON.parse(localStorage.getItem('flog')),{kind:'done',by:'',id:9,plot:'North',crop:'Dog',date:'2026-11-12',dom:'pets',tk:'vaccine',type:'חיסון',product:'rabies',dose:'',notes:''}]));
  await S.sync();

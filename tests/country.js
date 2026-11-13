@@ -14,5 +14,6 @@ const {chromium}=require('playwright');const path=require('path');let fails=0;co
   ok(await p.evaluate(()=>{PACKS_ENFORCE=true;localStorage.setItem('ent','["plants:flowers"]');home();const A=document.getElementById('app'),ids=[...A.querySelectorAll('[data-id]')].map(x=>x.dataset.id);const locked=/🔒/.test(A.innerText)&&!ids.includes('tomato')&&!ids.includes('pothos')&&ids.includes('marigold');
    localStorage.setItem('ent','["plants"]');home();const all=document.querySelectorAll('#app [data-id]').length>=CROPS.length&&!/🔒/.test(document.getElementById('app').innerText);
    localStorage.setItem('ent','[]');PACKS_ENFORCE=false;home();return locked&&all&&hasPack('pets')&&hasPack('plants','veg')}),lang+': entitlements lock/unlock by pack and domain, off by default');
+  ok(await p.evaluate(()=>{const c=CROPS.find(x=>x.id==='tomato');CC='PT';const a=sowMonths(c).join();CC='AU';const s=sowMonths(c).join();CC='IL';return a==='3,4,5'&&s==='10,11,12'&&COUNTRIES.AU.src.length===2}),lang+': Portugal has its own calendar, southern hemisphere shifts 6 months');
   await p.close()}
  await b.close();process.exit(fails?1:0)})();
