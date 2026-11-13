@@ -31,6 +31,10 @@ S.touch=function(){if(!S.user)return;clearTimeout(timer);timer=setTimeout(()=>S.
 S.markDeleted=function(key,rid){if(!rid)return;const a=store.get(key,[]);a.push(rid);store.set(key,a)};
 
 const must=r=>{if(r&&r.error)throw r.error;return r?r.data:null};
+// Tombstones: a deletion on one device is recorded in the cloud so another device that still has the item does not push it back.
+// Best effort: if the table is missing (05b SQL not run yet) sync works as before.
+async function putTombs(sb,kind,ids){try{if(ids.length)await sb.from("tombstones").upsert(ids.map(id=>({user_id:S.user.id,kind,item_id:id})),{onConflict:"user_id,kind,item_id"})}catch(e){}}
+async function getTombs(sb,kind){try{const r=await sb.from("tombstones").select("item_id").eq("user_id",S.user.id).eq("kind",kind);return new Set((r&&r.data||[]).map(x=>x.item_id))}catch(e){return new Set()}}
 
 S.sync=async function(){
   if(!S.sb||!S.user||S.busy)return;S.busy=true;S.err="";
@@ -46,7 +50,9 @@ async function syncLog(sb){
   let log=store.get("flog",[]);
   // 1. deletions made on this device
   const del=store.get("flogdel",[]);
-  if(del.length){must(await sb.from("events").delete().in("id",del));store.set("flogdel",[])}
+  if(del.length){must(await sb.from("events").delete().in("id",del));await putTombs(sb,"event",del);store.set("flogdel",[])}
+  const tombE=await getTombs(sb,"event");
+  if(tombE.size){log=log.filter(x=>!x.rid||!tombE.has(x.rid))}
   // 2. spaces (one per plot name)
   const spaces=must(await sb.from("spaces").select("id,name,domain").in("domain",DOMS))||[];
   const spaceId={};spaces.forEach(s=>spaceId[s.domain+"|"+s.name]=s.id);
@@ -97,7 +103,9 @@ async function syncLog(sb){
 async function syncReminders(sb){
   let rem=store.get("rem",[]);
   const del=store.get("remdel",[]);
-  if(del.length){must(await sb.from("reminders").delete().in("id",del));store.set("remdel",[])}
+  if(del.length){must(await sb.from("reminders").delete().in("id",del));await putTombs(sb,"reminder",del);store.set("remdel",[])}
+  const tombR=await getTombs(sb,"reminder");
+  if(tombR.size){rem=rem.filter(x=>!x.rid||!tombR.has(x.rid))}
   rem.forEach(x=>{if(!x.rid)x.rid=uuid()});
   if(rem.length)must(await sb.from("reminders").upsert(rem.map(x=>({id:x.rid,title:x.t,due_on:x.d}))));
   const remote=must(await sb.from("reminders").select("id,title,due_on,done_at"))||[];
