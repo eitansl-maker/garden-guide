@@ -22,4 +22,10 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   await p.evaluate(()=>{CC="DE"});await p.click('#t1');ok((await p.innerText('body')).includes('Heidelbeere'),'DE: blueberry visible with German name');
   await p.evaluate(()=>{CC="IL"});await p.click('#t2');await p.click('#t1');ok(!(await p.innerText('body')).includes('Heidelbeere'),'IL: blueberry hidden by country');
   ok(await p.evaluate(()=>DOMAINS.pets.items.find(x=>x.id==='dog').de.name==='Hund'),'pet German content applied')}
+ // category chips: flowers and houseplants are separate from vegetables
+ {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);await p.click('#t1');
+  ok((await p.$$('[data-pk]')).length===3,'home has 3 category chips');
+  ok(await p.$('[data-id=strawberry]')!==null,'veg chip shows strawberry');await p.click('[data-pk=house]');
+  ok(await p.$('[data-id=pothos]')!==null&&await p.$('[data-id=strawberry]')===null,'houseplants chip shows only houseplants');
+  await p.click('[data-pk=flowers]');ok(await p.$('[data-id=strawberry]')===null&&await p.$('[data-id=pothos]')===null,'flowers chip excludes veg and houseplants')}
  await b.close();console.log(fails?fails+' FAILED':'ALL PASSED');process.exit(fails?1:0)})();
