@@ -85,7 +85,7 @@ let GSEL=null;
 function fguides(){const t=T();if(DOM!=="plants"){fb.innerHTML=`<div id="kn"></div>`;knRender();return}
  const g=FARM.find(x=>x.id===GSEL);
  if(g){const f=L==="he"?g:g.en;fb.innerHTML=`<button class="back" id="gback">${t.back}</button><div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`;gback.onclick=()=>{GSEL=null;fguides()};return}
- fb.innerHTML=`<div id="kn"></div><p>${t.farmIntro}</p><h3>${L==="he"?"בחר גידול":"Choose a crop"}</h3><div class="grid">`+FARM.map(x=>{const f=L==="he"?x:x.en;return `<button class="card" data-g="${x.id}"><div class="e">${x.emoji}</div><b>${f.title}</b></button>`}).join("")+`</div>`;
+ fb.innerHTML=`<p>${t.farmIntro}</p><h3>${L==="he"?"בחר גידול":"Choose a crop"}</h3><div class="grid">`+FARM.map(x=>{const f=L==="he"?x:x.en;return `<button class="card" data-g="${x.id}"><div class="e">${x.emoji}</div><b>${f.title}</b></button>`}).join("")+`</div><div id="kn" style="margin-top:12px"></div>`;
  fb.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{GSEL=b.dataset.g;fguides()});knRender()}
 function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f0,Object.fromEntries(Object.entries(lb_).map(([k,v])=>[k,v[L]]))),EV=D.events,ALL=lg().filter(x=>dom_(x)===DOM),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
  const today=new Date().toISOString().slice(0,10);
@@ -210,7 +210,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v48";
+const VER="v49";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
