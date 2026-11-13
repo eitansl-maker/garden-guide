@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="crops.js?v=33"></script><script src="farmer.js?v=33"></script><script src="i18n.js?v=33"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=34"></script><script src="farmer.js?v=34"></script><script src="i18n.js?v=34"></script><script src="sync.js?v=34"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -39,7 +39,7 @@ const FS={he:{log:"📒 יומן",ask:"💬 שאל יועץ",guides:"📚 מדר
  askPrompt:"You are an agricultural advisor in Israel helping farmers. Answer in short, clear, practical English. If unsure, say so and what to check. Do not recommend pesticide doses; refer to the product label and an extension officer. Question: "}};
 const FSx=()=>L==="he"?FS.he:FS.en;
 const lg=()=>{try{return JSON.parse(localStorage.getItem("flog")||"[]")}catch(e){return[]}};
-const sv=a=>{try{localStorage.setItem("flog",JSON.stringify(a))}catch(e){alert("error")}};
+const sv=a=>{try{localStorage.setItem("flog",JSON.stringify(a))}catch(e){alert("error")}SYNC.touch()};
 const esc=x=>String(x||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const tyl=x=>x.ti!=null?FSx().types[x.ti]:x.type;
 function farm(){const f=FSx();app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+["log","ask","guides"].map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
@@ -65,7 +65,7 @@ function flog(){const f=FSx(),ALL=lg(),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.
  lk.onchange=()=>{lbw.style.display=lk.value==="ins"?"block":"none";ldt.textContent=lk.value==="ins"?f.dueDate:f.date;la.textContent=lk.value==="ins"?f.saveIns:f.save};
  fb.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>{const a=lg(),x=a.find(y=>y.id==b.dataset.ok);if(x){x.kind="done";x.date=today;x.notes=(x.notes?x.notes+" · ":"")+f.doneNote;sv(a);flog()}});
  la.onclick=()=>{if(!lp.value.trim()||!lc.value.trim()){alert(f.need);return}const a=lg();a.push({kind:lk.value,by:lb.value.trim(),id:Date.now(),plot:lp.value.trim(),crop:lc.value.trim(),date:ld.value,ti:+lt.value,type:FS.he.types[+lt.value],product:lm.value.trim(),dose:ls.value.trim(),notes:ln.value.trim()});sv(a);flog()};
- fb.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{if(confirm(f.confirm)){sv(lg().filter(x=>x.id!=b.dataset.d));flog()}});
+ fb.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{if(confirm(f.confirm)){const g=lg().find(x=>x.id==b.dataset.d);if(g)SYNC.markDeleted("flogdel",g.rid);sv(lg().filter(x=>x.id!=b.dataset.d));flog()}});
  if(window.lx)lx.onclick=()=>{const q=v=>'"'+String(v||"").replace(/"/g,'""')+'"';const csv="﻿"+[f.csvH,...lg().map(x=>[x.date,x.plot,x.crop,(x.kind==="ins"?f.ins:"")+tyl(x),x.product,x.dose,(x.by?f.instr+" "+x.by+". ":"")+x.notes].map(q).join(","))].join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="farm-log.csv";a.click()}}
 function fask(){const f=FSx();fb.innerHTML=`<div class="detail"><h3>${f.askT}</h3><p class="note">${f.askNote}</p><textarea id="aq" rows="4" style="width:100%;padding:8px;font:inherit" placeholder="${f.askPh}"></textarea><button class="card" id="ab" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${f.askBtn}</button><div id="ao" class="ilan" style="display:none;white-space:pre-wrap"></div><p class="note">${f.askKey}</p></div>`;
  ab.onclick=async()=>{let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k){alert(f.askNoKey);return}if(!aq.value.trim())return;
@@ -87,11 +87,11 @@ async function speedtest(k,out){out.style.display="block";out.innerHTML="";for(c
 function prompt_(c){return L==="he"?"אני מגדל בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":"I grow crops in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly in English: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label."}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
 const rg=()=>{try{return JSON.parse(localStorage.getItem("rem")||"[]")}catch(e){return[]}};
-const rs=a=>{try{localStorage.setItem("rem",JSON.stringify(a))}catch(e){}};
+const rs=a=>{try{localStorage.setItem("rem",JSON.stringify(a))}catch(e){}SYNC.touch()};
 function remRender(){const t=T(),td=new Date().toISOString().slice(0,10),a=rg().sort((x,y)=>x.d.localeCompare(y.d));
  rl.innerHTML=a.length?`<h3>⏰ ${t.remTitle}</h3>`+a.map(r=>`<div class="detail" style="margin-bottom:8px;border-inline-start:4px solid ${r.d<=td?"#c98a00":"#9bb88a"}"><b>${r.d}</b>${r.d<td?" · "+t.remLate:""}<br><span class="rt"></span> <button class="back" data-rd="${r.id}">${t.remDone}</button></div>`).join(""):"";
  [...rl.querySelectorAll(".rt")].forEach((e,i)=>e.textContent=a[i].t);
- rl.querySelectorAll("[data-rd]").forEach(b=>b.onclick=()=>{rs(rg().filter(x=>x.id!=b.dataset.rd));remRender()})}
+ rl.querySelectorAll("[data-rd]").forEach(b=>b.onclick=()=>{const g=rg().find(x=>x.id==b.dataset.rd);if(g)SYNC.markDeleted("remdel",g.rid);rs(rg().filter(x=>x.id!=b.dataset.rd));remRender()})}
 let IMG=null,HIST=[];function diag(){IMG=null;HIST=[];const t=T();app.innerHTML=`<div id="rl"></div><h2>📷 ${t.tabDiag}</h2><p>${t.diagIntro}</p><div class="detail"><div class="row"><label>${t.diagCrop}<br><input id="cr" style="width:100%;padding:8px;font:inherit"></label></div><div class="row"><label class="card" style="display:block">📸 ${t.diagPick}<input id="ph" type="file" accept="image/*" capture="environment" hidden></label></div><img id="pv" style="max-width:100%;border-radius:10px;display:none"><div class="row"><button class="card" id="ai" style="width:100%;background:var(--g);color:#fff" disabled>${t.diagAI}</button></div><div id="out" class="ilan" style="display:none;white-space:pre-wrap"></div><div id="fu" style="display:none;margin-top:10px"><div class="detail" style="margin-bottom:10px"><b>⏰ ${t.remAdd}</b><input id="rt" style="width:100%;padding:8px;font:inherit;margin:6px 0" value="${t.remDef}"><input id="rd" type="date" style="width:100%;padding:8px;font:inherit"><button class="card" id="rb" style="width:100%;margin-top:6px">${t.remSave}</button></div><div id="fl"></div><textarea id="fq" rows="2" style="width:100%;padding:8px;font:inherit" placeholder="${t.diagFuPh}"></textarea><button class="card" id="fs" style="width:100%;margin-top:6px">${t.diagFu}</button></div><p class="note" id="nokey"></p><p class="note">${t.diagNote}</p></div>`;
  let f=null;ph.onchange=()=>{f=ph.files[0];if(f){pv.src=URL.createObjectURL(f);pv.style.display="block";ai.disabled=false}};
  {let k0="";try{k0=localStorage.getItem("gkey")||""}catch(e){}if(!k0){nokey.innerHTML=`<a href="#" id="gh">${t.diagNoKey} ${t.diagGoHelp}</a>`;gh.onclick=e=>{e.preventDefault();TAB="help";tabs();help()}}}
@@ -106,10 +106,20 @@ let IMG=null,HIST=[];function diag(){IMG=null;HIST=[];const t=T();app.innerHTML=
   try{const a=await gem(k,[{text:ctx},{inline_data:{mime_type:"image/jpeg",data:IMG}}],()=>{});HIST.push([q,a]);d.lastChild.textContent=a}catch(e){d.lastChild.textContent=t.diagErr+" "+e.message}fs.disabled=false};
 
 }
-function help(){const t=T();app.innerHTML=`<div class="detail"><h3>🔑 ${t.helpTitle}</h3><p>${t.helpWhy}</p><ol>${t.helpSteps.map(x=>`<li style="margin:8px 0">${x}</li>`).join("")}</ol><p><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;background:var(--g);color:#fff">${t.helpOpen}</a></p><h4>${t.helpKeyBox}</h4><input id="key" type="password" style="width:100%;padding:10px;font:inherit" placeholder="AIza..."><div style="display:flex;gap:8px;margin-top:8px"><button class="card" id="sk" style="flex:1;background:var(--g);color:#fff">${t.save}</button><button class="card" id="st" style="flex:1">${t.speed}</button></div><div id="so" class="ilan" style="display:none"></div><p class="note">${t.helpSafe}</p><h4>${t.helpFaq}</h4><ul>${t.helpQ.map(x=>`<li style="margin:6px 0">${x}</li>`).join("")}</ul></div>`;
+function help(){const t=T();app.innerHTML=acctHtml()+`<div class="detail"><h3>🔑 ${t.helpTitle}</h3><p>${t.helpWhy}</p><ol>${t.helpSteps.map(x=>`<li style="margin:8px 0">${x}</li>`).join("")}</ol><p><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;background:var(--g);color:#fff">${t.helpOpen}</a></p><h4>${t.helpKeyBox}</h4><input id="key" type="password" style="width:100%;padding:10px;font:inherit" placeholder="AIza..."><div style="display:flex;gap:8px;margin-top:8px"><button class="card" id="sk" style="flex:1;background:var(--g);color:#fff">${t.save}</button><button class="card" id="st" style="flex:1">${t.speed}</button></div><div id="so" class="ilan" style="display:none"></div><p class="note">${t.helpSafe}</p><h4>${t.helpFaq}</h4><ul>${t.helpQ.map(x=>`<li style="margin:6px 0">${x}</li>`).join("")}</ul></div>`;
  try{key.value=localStorage.getItem("gkey")||""}catch(e){}
+ acctBind();
  sk.onclick=()=>{try{localStorage.setItem("gkey",key.value.trim());alert(t.saved)}catch(e){alert("error")}};
  st.onclick=()=>{const k=key.value.trim();if(!k){alert(t.diagNoKey);return}speedtest(k,so)}}
+function acctHtml(){const t=T(),u=SYNC.user,box=x=>`<div class="detail" style="margin-bottom:12px"><h3>☁️ ${t.acctTitle}</h3>${x}</div>`;
+ if(!SYNC.sb)return box(`<p class="note">${t.acctOffline}</p>`);
+ if(!u)return box(`<p>${t.acctWhy}</p><input id="am" type="email" autocomplete="email" style="width:100%;padding:10px;font:inherit" placeholder="name@email.com"><button class="card" id="asend" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${t.acctSend}</button><p class="note" id="amsg"></p>`);
+ return box(`<p>✅ <span id="aem"></span></p><p class="note">${SYNC.busy?t.acctBusy:SYNC.err?t.diagErr+" "+esc(SYNC.err):SYNC.last?t.acctSynced:""}</p><div style="display:flex;gap:8px"><button class="card" id="asyn" style="flex:1">${t.acctSync}</button><button class="card" id="aout" style="flex:1">${t.acctOut}</button></div><button class="back" id="adel" style="margin-top:8px">${t.acctDel}</button>`)}
+function acctBind(){const t=T();
+ if(window.aem)aem.textContent=SYNC.user.email;
+ if(window.asend)asend.onclick=async()=>{const e=am.value.trim();if(!e)return;asend.disabled=true;try{await SYNC.signIn(e);amsg.textContent=t.acctSent}catch(x){amsg.textContent=t.diagErr+" "+x.message}asend.disabled=false};
+ if(window.asyn){asyn.onclick=()=>SYNC.sync();aout.onclick=()=>SYNC.signOut();adel.onclick=async()=>{if(confirm(t.acctDelConfirm))try{await SYNC.deleteAccount()}catch(x){alert(x.message)}}}}
+SYNC.onChange=()=>{if(TAB==="help")help();else if(TAB==="diag"){if(window.rl)remRender()}else if(TAB==="farm"&&FT==="log"&&!(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)))farm()};
 function about(){const t=T();app.innerHTML=`<div class="detail"><h3>👨‍🌾 ${t.aboutName}</h3><p>${t.aboutBio}</p><div class="row"><small>${t.aboutWhere}</small>${t.aboutWhereV}</div><div class="row"><small>${t.aboutWhat}</small>${t.aboutWhatV}</div><div class="row"><small>${t.aboutHello}</small>${t.aboutHelloV}</div><p><a class="card" style="display:block;text-decoration:none" target="_blank" rel="noopener" href="https://www.instagram.com/ilanbrkn/">📸 ${t.aboutIg}</a></p><p class="note">${t.aboutAI}</p></div><div class="detail" style="margin-top:12px"><h3>🌿 ${t.aboutApp}</h3><p>${t.aboutAppV}</p><p class="note">${t.draft}</p></div>`}
 function setLang(x){L=x;try{localStorage.setItem("lang",x)}catch(e){}head();tabs();TAB=="farm"?farm():TAB=="diag"?diag():TAB=="help"?help():TAB=="about"?about():home()}
 let DP=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();DP=e;const b=document.getElementById("inst");if(b)b.style.display="block"});
@@ -130,8 +140,8 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="row"><small>${t.harvest}</small>${c.harvest}</div>
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
-head();tabs();diag();
-const VER="v33";
+head();tabs();diag();SYNC.init();
+const VER="v34";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
