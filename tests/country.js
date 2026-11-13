@@ -15,5 +15,6 @@ const {chromium}=require('playwright');const path=require('path');let fails=0;co
    localStorage.setItem('ent','["plants"]');home();const all=document.querySelectorAll('#app [data-id]').length>=CROPS.length&&!/🔒/.test(document.getElementById('app').innerText);
    localStorage.setItem('ent','[]');PACKS_ENFORCE=false;home();return locked&&all&&hasPack('pets')&&hasPack('plants','veg')}),lang+': entitlements lock/unlock by pack and domain, off by default');
   ok(await p.evaluate(()=>{const c=CROPS.find(x=>x.id==='tomato');CC='PT';const a=sowMonths(c).join();CC='AU';const s=sowMonths(c).join();CC='IL';return a==='3,4,5'&&s==='10,11,12'&&COUNTRIES.AU.src.length===2}),lang+': Portugal has its own calendar, southern hemisphere shifts 6 months');
+  ok(await p.evaluate(()=>{setCountry('PT');const a=document.getElementById('ac').textContent.includes('🇵🇹');setCountry('IL');return a&&document.getElementById('ac').textContent.includes('🇮🇱')}),lang+': header flag follows the country');
   await p.close()}
  await b.close();process.exit(fails?1:0)})();
