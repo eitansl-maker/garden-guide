@@ -102,5 +102,14 @@ async function syncReminders(sb){
   store.set("rem",rem);
 }
 
+S.saveCountry=async function(c){if(!S.sb||!S.user)return;try{await S.sb.from("profiles").update({country:c}).eq("id",S.user.id)}catch(e){}};
+S.knowledge=async function(country,domain,lang){
+  const r=await S.sb.from("knowledge_items").select("topic,content,source_url,fetched_at,valid_until").eq("country",country).eq("domain",domain).eq("lang",lang);
+  if(r.error)throw r.error;return r.data||[];
+};
+S.requestKnowledge=async function(country,domain,lang){
+  const r=await S.sb.functions.invoke("knowledge-refresh",{body:{country,domain,lang}});
+  if(r.error)throw r.error;return r.data;
+};
 window.SYNC=S;
 })();
