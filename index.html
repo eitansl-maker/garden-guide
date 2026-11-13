@@ -29,6 +29,7 @@ const COUNTRIES={IL:{clim:"med",he:"ישראל",en:"Israel",heIn:"בישראל",
  FI:{clim:"cold",he:"פינלנד",en:"Finland",heIn:"בפינלנד",src:[{n:"Ruokavirasto (Finnish Food Authority): home gardeners",u:"https://www.ruokavirasto.fi/en/plants/garden-plants/home-gardeners"}]},
  DK:{clim:"cool",he:"דנמרק",en:"Denmark",heIn:"בדנמרק",src:[{n:"Miljøstyrelsen (Danish EPA): pesticides",u:"https://eng.mst.dk/chemicals/pesticides"}]},
  DE:{clim:"cool",he:"גרמניה",en:"Germany",heIn:"בגרמניה",src:[{n:"BVL: authorised plant protection products",u:"https://bvl.bund.de/EN/Tasks/04_Plant_protection_products/01_ppp_tasks/02_ppp_AuthorisationReviewActSub/01_ppps_authorised/ppp_authorised_node.html"}]},
+ PL:{clim:"cool",he:"פולין",en:"Poland",heIn:"בפולין",src:[{n:"PIORiN (Państwowa Inspekcja Ochrony Roślin i Nasiennictwa): plant protection",u:"https://www.gov.pl/web/piorin"},{n:"Ministerstwo Rolnictwa i Rozwoju Wsi",u:"https://www.gov.pl/web/rolnictwo"}]},
  PT:{clim:"medw",he:"פורטוגל",en:"Portugal",heIn:"בפורטוגל",src:[{n:"DGAV (Direção-Geral de Alimentação e Veterinária)",u:"https://www.dgav.pt/"},{n:"DGADR (Direção-Geral de Agricultura e Desenvolvimento Rural)",u:"https://www.dgadr.gov.pt/"}]},
  AU:{clim:"cool",south:1,he:"אוסטרליה",en:"Australia",heIn:"באוסטרליה",src:[{n:"Australian Pesticides and Veterinary Medicines Authority (APVMA)",u:"https://apvma.gov.au/"},{n:"Department of Agriculture, Fisheries and Forestry",u:"https://www.agriculture.gov.au/"}]},
  US:{clim:"cool",he:"ארצות הברית",en:"United States",heIn:"בארצות הברית",src:[{n:"USDA Plant Hardiness Zone Map",u:"https://planthardiness.ars.usda.gov/"}]}};
@@ -237,7 +238,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  document.getElementById("b").onclick=home;scrollTo(0,0);
  if(c.wiki){const h=document.createElement("div");h.id="pimg";app.querySelector(".detail h3").after(h);wikiImg(c.wiki).then(o=>{if(!o||!h.isConnected)return;const im=document.createElement("img");im.alt=c.name;im.src=o.src;im.style.cssText="width:100%;max-height:240px;object-fit:cover;border-radius:12px";im.onload=()=>{h.appendChild(im);const n=document.createElement("p");n.className="note";n.style.cssText="font-size:10px;opacity:.6;margin:2px 0 8px";const l=document.createElement("a");l.href=o.page;l.target="_blank";l.rel="noopener";l.textContent="📷 "+(o.by||"Wikimedia Commons")+" · "+o.lic;n.appendChild(l);h.appendChild(n)}})}}
 head();SYNC.init();SPECIES.load();gated()?gate():(tabs(),diag());
-const VER="v67";
+const VER="v68";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
