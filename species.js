@@ -30,7 +30,8 @@ function apply(d){
    for(const l of LANGS){if(l==="he"||!inf[l])continue;(I18N[l].crops=I18N[l].crops||{})[id]=pick(inf[l],KEYS)}
   }else if(DOMAINS[dom]&&DOMAINS[dom].items){
    const D=DOMAINS[dom];let x=D.items.find(y=>y.id===id);
-   if(!x){if(!inf.he&&!inf.en)continue;x={id,emoji:attrs.emoji||"🐾",he:{},en:{}};if(WIKI[id])x.wiki=WIKI[id];D.items.push(x)}
+   if(!x){if(!inf.he&&!inf.en)continue;x={id,emoji:attrs.emoji||"🐾",he:{},en:{}};D.items.push(x)}
+   if(!x.wiki&&(attrs.wiki||WIKI[id]))x.wiki=attrs.wiki||WIKI[id];
    for(const l of LANGS){if(!inf[l])continue;if((l==="he"||l==="en")&&x[l]&&x[l].name)continue;x[l]=pick(inf[l],PKEYS)}
    fb(x,0);
   }}
