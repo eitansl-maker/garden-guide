@@ -125,7 +125,11 @@ async function syncProfile(sb){
   if(lc===null)put("country",p.country);else if(lc!==p.country)up.country=lc;
   const cd=(p.domains||[])[0];
   if(ld===null)cd&&put("domain",cd);else if(ld!==cd)up.domains=[ld];
-  if(Object.keys(up).length)must(await sb.from("profiles").update(up).eq("id",S.user.id));
+  if(Object.keys(up).length){
+    const r=await sb.from("profiles").update(up).eq("id",S.user.id);
+    // A country the cloud does not know yet (foreign key 23503): keep it on the device and carry on, do not fail the whole sync.
+    if(r&&r.error){if(r.error.code==="23503"&&up.country){delete up.country;if(Object.keys(up).length)must(await sb.from("profiles").update(up).eq("id",S.user.id))}else throw r.error}
+  }
   if(S.onProfile)S.onProfile({country:raw("country"),domain:raw("domain")});
   await syncEntitlements(sb);
 }

@@ -53,6 +53,9 @@ function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],tombstone
  ok(c.db.events.some(e=>e.type==='vaccine'),'pet event type key synced');
  c.db.events.push({id:'remote2',space_id:c.db.spaces.find(x=>x.domain==='pets').id,subject_id:null,kind:'done',type:'deworm',occurred_on:'2026-11-11',product:null,dose:null,notes:null,advisor_name:null,created_at:new Date().toISOString()});
  await S.sync();const pl=JSON.parse(localStorage.getItem('flog')).find(x=>x.rid==='remote2');ok(pl&&pl.dom==='pets'&&pl.tk==='deworm'&&pl.plot==='North','pet event pulled with domain and type key');
+ // unknown country in the cloud does not fail the sync
+ {const orig=c.from;c.from=tb=>{const b=orig(tb);if(tb==='profiles'){const u=b.update.bind(b);b.update=p=>{if(p.country==='ZZ'){const x={eq(){return x},then(res){return Promise.resolve({data:null,error:{code:'23503',message:'fk'}}).then(res)}};return x}return u(p)}}return b};
+  localStorage.setItem('country','ZZ');await S.sync();ok(!S.err,'unknown country (FK error) does not fail sync '+S.err);c.from=orig;localStorage.setItem('country','FI')}
  // errors surface
  c.from=()=>({select(){return this},eq(){return this},in(){return this},delete(){return this},then(res){return Promise.resolve({data:null,error:{message:'boom'}}).then(res)}});
  await S.sync();ok(S.err==='boom','error surfaced: '+S.err);
