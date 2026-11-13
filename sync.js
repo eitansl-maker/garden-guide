@@ -6,13 +6,14 @@ const TYPES=["spray","pest","fertilize","irrigate","prune","sow","harvest","othe
 const HE_TYPES=["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"];
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const uuid=()=>crypto.randomUUID();
-const S={sb:null,user:null,busy:false,err:"",last:0,onChange:null};
+// requireLogin: false during the free trial period. Flip to true when the app goes paid (then the app shows only the sign-in screen until the user signs in).
+const S={sb:null,user:null,busy:false,err:"",last:0,onChange:null,ready:false,cfg:{requireLogin:false}};
 
 S.setClient=c=>{S.sb=c};
 S.init=function(){
   if(S.sb||!window.supabase)return;
   S.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  S.sb.auth.getSession().then(({data})=>setUser(data&&data.session&&data.session.user));
+  S.sb.auth.getSession().then(({data})=>{S.ready=true;setUser(data&&data.session&&data.session.user)});
   S.sb.auth.onAuthStateChange((ev,ses)=>setUser(ses&&ses.user));
 };
 function setUser(u){const was=S.user&&S.user.id;S.user=u||null;if(S.user&&S.user.id!==was)S.sync();else if(S.onChange)S.onChange()}
