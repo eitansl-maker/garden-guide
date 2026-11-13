@@ -20,15 +20,15 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=36"></script><script src="farmer.js?v=36"></script><script src="i18n.js?v=36"></script><script src="sync.js?v=36"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=37"></script><script src="farmer.js?v=37"></script><script src="i18n.js?v=37"></script><script src="sync.js?v=37"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
-const COUNTRIES={IL:{he:"ישראל",en:"Israel",heIn:"בישראל",src:[{n:"משרד החקלאות ופיתוח הכפר",ne:"Ministry of Agriculture and Rural Development",u:"https://www.gov.il/he/departments/ministry_of_agriculture_and_rural_development"},{n:"שה\"ם (שירות ההדרכה)",ne:"Shaham (Extension Service)",u:"https://www.moag.gov.il/shaham"}]},
- FI:{he:"פינלנד",en:"Finland",heIn:"בפינלנד",src:[{n:"Ruokavirasto (Finnish Food Authority): home gardeners",u:"https://www.ruokavirasto.fi/en/plants/garden-plants/home-gardeners"}]},
- DK:{he:"דנמרק",en:"Denmark",heIn:"בדנמרק",src:[{n:"Miljøstyrelsen (Danish EPA): pesticides",u:"https://eng.mst.dk/chemicals/pesticides"}]},
- DE:{he:"גרמניה",en:"Germany",heIn:"בגרמניה",src:[{n:"BVL: authorised plant protection products",u:"https://bvl.bund.de/EN/Tasks/04_Plant_protection_products/01_ppp_tasks/02_ppp_AuthorisationReviewActSub/01_ppps_authorised/ppp_authorised_node.html"}]},
- US:{he:"ארצות הברית",en:"United States",heIn:"בארצות הברית",src:[{n:"USDA Plant Hardiness Zone Map",u:"https://planthardiness.ars.usda.gov/"}]}};
+const COUNTRIES={IL:{clim:"med",he:"ישראל",en:"Israel",heIn:"בישראל",src:[{n:"משרד החקלאות ופיתוח הכפר",ne:"Ministry of Agriculture and Rural Development",u:"https://www.gov.il/he/departments/ministry_of_agriculture_and_rural_development"},{n:"שה\"ם (שירות ההדרכה)",ne:"Shaham (Extension Service)",u:"https://www.moag.gov.il/shaham"}]},
+ FI:{clim:"cold",he:"פינלנד",en:"Finland",heIn:"בפינלנד",src:[{n:"Ruokavirasto (Finnish Food Authority): home gardeners",u:"https://www.ruokavirasto.fi/en/plants/garden-plants/home-gardeners"}]},
+ DK:{clim:"cool",he:"דנמרק",en:"Denmark",heIn:"בדנמרק",src:[{n:"Miljøstyrelsen (Danish EPA): pesticides",u:"https://eng.mst.dk/chemicals/pesticides"}]},
+ DE:{clim:"cool",he:"גרמניה",en:"Germany",heIn:"בגרמניה",src:[{n:"BVL: authorised plant protection products",u:"https://bvl.bund.de/EN/Tasks/04_Plant_protection_products/01_ppp_tasks/02_ppp_AuthorisationReviewActSub/01_ppps_authorised/ppp_authorised_node.html"}]},
+ US:{clim:"cool",he:"ארצות הברית",en:"United States",heIn:"בארצות הברית",src:[{n:"USDA Plant Hardiness Zone Map",u:"https://planthardiness.ars.usda.gov/"}]}};
 let CC="IL";try{CC=localStorage.getItem("country")||"IL"}catch(e){}if(!COUNTRIES[CC])CC="IL";
 const cName=()=>COUNTRIES[CC][L==="he"?"he":"en"],cIn=()=>L==="he"?COUNTRIES[CC].heIn:"in "+COUNTRIES[CC].en;
 function setCountry(c){if(!COUNTRIES[c])return;CC=c;try{localStorage.setItem("country",c)}catch(e){}SYNC.saveCountry(c)}
@@ -153,13 +153,14 @@ function head(){const t=T();document.documentElement.lang=L;document.documentEle
  document.getElementById("sh").onclick=async()=>{const u="https://eitansl-maker.github.io/garden-guide/",tx=T().shareText;try{if(navigator.share){await navigator.share({title:T().title,text:tx,url:u});return}}catch(e){if(e.name==="AbortError")return}try{await navigator.clipboard.writeText(u);alert(T().copied)}catch(e){prompt(T().copyIt,u)}};
  document.getElementById("ac").onclick=()=>{TAB="help";tabs();help();scrollTo(0,0)};
  document.getElementById("lg").onclick=()=>setLang(L==="he"?"en":"he")}
-function home(){const t=T(),now=CROPS.filter(c=>c.months.includes(m));
- app.innerHTML=(CC!=="IL"?`<p class="note">${t.calNote}</p>`:"")+`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
+function sowMonths(c){const k=COUNTRIES[CC].clim;if(k==="med"||!c.cool)return c.months;return k==="cold"?c.cool.map(x=>x%12+1):c.cool}
+function home(){const t=T(),now=CROPS.filter(c=>sowMonths(c).includes(m));
+ app.innerHTML=(COUNTRIES[CC].clim!=="med"?`<p class="note">${t.calNote}</p>`:"")+`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
  app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id))}
 function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${crop(c).name}</b></button>`).join("")+`</div>`}
 function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  app.innerHTML=`<button class="back" id="b">${t.back}</button><div class="detail"><h3>${c.emoji} ${c.name}</h3>
- <div class="row"><small>${t.when}</small>${c.months.map(x=>t.months[x-1]).join(", ")}</div>
+ <div class="row"><small>${t.when}</small>${sowMonths(c).map(x=>t.months[x-1]).join(", ")}</div>
  <div class="row"><small>${t.water}</small>${c.water}</div>
  <div class="row"><small>${t.why}</small>${c.why}</div>
  <div class="row"><small>${t.sun}</small>${c.sun}</div>
@@ -167,7 +168,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v36";
+const VER="v37";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
