@@ -39,5 +39,16 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   await p.click('#rb');ok(await p.locator('[data-rd]').count()===1,lang+': reminder saved');await p.click('[data-rd]');ok(await p.locator('[data-rd]').count()===0,lang+': reminder marked done');
   // advisor
   await p.click('#t2');await p.click('[data-f=ask]');await p.fill('#aq','q');await p.click('#ab');await p.waitForTimeout(500);ok((await p.innerText('#ao')).includes('MOCK-ANSWER'),lang+': advisor answers');
+  // pets domain: own log, event types, vaccine adds a reminder, plants log untouched
+  await p.evaluate(()=>setDomain('pets'));await p.click('#t2');await p.click('[data-f=log]');
+  ok(await p.locator('[data-f=guides]').count()===0,lang+': pets farm tab has no farm guides');
+  ok(await p.locator('#lt option').count()===10&&!/undefined|NaN|\[object/.test(await txt()),lang+': pets log form, 10 event types');
+  ok(!(await txt()).includes('Plot A'),lang+': plants entries not shown in pets log');
+  const rem0=await p.evaluate(()=>JSON.parse(localStorage.getItem('rem')||'[]').length);
+  await p.fill('#lp','Rex');await p.fill('#lc','Dog');await p.selectOption('#lt','1');await p.click('#la');
+  ok((await txt()).includes('Rex'),lang+': pet entry saved');
+  ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('rem')||'[]').length)===rem0+1,lang+': vaccine entry added a reminder');
+  if(lang==='en')ok(!/[֐-׿]/.test((await txt()).replace(/עברית/g,'')),'en: pets log has no Hebrew');
+  await p.evaluate(()=>setDomain('plants'));await p.click('#t2');await p.click('[data-f=log]');ok((await txt()).includes('Plot A')&&!(await txt()).includes('Rex'),lang+': back to plants, logs separate');
   ok(errs.length===0,lang+': no page errors '+errs.join(';'));await ctx.close()}
  await b.close();console.log(fails?`\n${fails} FAILED`:'\nALL PASSED');process.exit(fails?1:0)})()

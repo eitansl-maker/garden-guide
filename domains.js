@@ -1,8 +1,14 @@
 // Domain packs: the app UI is built from the active pack. Adding a domain = a new entry here (+ a row in the cloud domain_packs). Draft content, not verified by a vet.
 window.DOMAINS={
- plants:{icon:"🌿",name:{he:"צמחים וגינה",en:"Plants & garden"}},
+ plants:{icon:"🌿",name:{he:"צמחים וגינה",en:"Plants & garden"},
+  events:[{k:"spray",he:"ריסוס",en:"Spraying"},{k:"pest",he:"הדברה",en:"Pest control"},{k:"fertilize",he:"דישון",en:"Fertilizing"},{k:"irrigate",he:"השקיה",en:"Irrigation"},{k:"prune",he:"גיזום / עבודת קרקע",en:"Pruning / soil work"},{k:"sow",he:"זריעה / שתילה",en:"Sowing / planting"},{k:"harvest",he:"קטיף",en:"Harvest"},{k:"other",he:"אחר",en:"Other"}]},
  pets:{icon:"🐾",name:{he:"כלבים וחתולים",en:"Dogs & cats"},
   tab:{he:"טיפול בחיות",en:"Pet care"},
+  farmTab:{he:"יומן חיות",en:"Pet log"},
+  // Event types (stable keys, synced as events.type). rep = suggested days until the next one (a reminder is offered; the vet's schedule wins).
+  events:[{k:"feed",he:"האכלה",en:"Feeding"},{k:"vaccine",he:"חיסון",en:"Vaccination",rep:365},{k:"deworm",he:"תילוע",en:"Deworming",rep:90},{k:"flea",he:"פרעושים וקרציות",en:"Flea & tick treatment",rep:30},{k:"vet",he:"ביקור וטרינר",en:"Vet visit"},{k:"meds",he:"תרופה",en:"Medication"},{k:"weight",he:"שקילה",en:"Weighing"},{k:"groom",he:"טיפוח / רחצה",en:"Grooming / bath"},{k:"walk",he:"הליכה / משחק",en:"Walk / play"},{k:"other",he:"אחר",en:"Other"}],
+  lab:{plot:{he:"שם החיה",en:"Pet name"},plotPh:{he:"למשל: רקס",en:"e.g. Rex"},crop:{he:"סוג / גזע",en:"Species / breed"},cropPh:{he:"למשל: כלב, לברדור",en:"e.g. Dog, Labrador"},type:{he:"סוג רישום",en:"Entry type"},prod:{he:"מזון / תרופה / חיסון",en:"Food / medication / vaccine"},dose:{he:"כמות / משקל",en:"Amount / weight"},by:{he:"שם הווטרינר",en:"Vet name"},kIns:{he:"הוראת וטרינר (לביצוע)",en:"Vet instruction (to do)"},saveT:{he:"שמור ביומן החיה",en:"Save to pet log"},remNote:{he:"נוספה תזכורת (לפי הלוח הרגיל, הווטרינר קובע)",en:"Reminder added (typical schedule, your vet decides)"}},
+  askPrompt:{he:"אתה עוזר ידע על כלבים וחתולים. ענה בעברית קצרה וברורה, מעשית. אל תמליץ על תרופות ומינונים, ובכל חשש ממשי הפנה לווטרינר. שאלה: ",en:"You are a helper for dog and cat owners. Answer in short, clear, practical English. Do not recommend medications or doses; for any real concern refer to a veterinarian. Question: "},
   warn:{he:"זה אומדן בלבד ולא תחליף לווטרינר. במצב חירום (קשיי נשימה, הרעלה, דימום, קריסה) פנה מיד לווטרינר.",en:"This is an estimate only, not a replacement for a veterinarian. In an emergency (breathing trouble, poisoning, bleeding, collapse) see a vet immediately."},
   fields:[{k:"feed",he:"האכלה",en:"Feeding"},{k:"water",he:"מים",en:"Water"},{k:"move",he:"פעילות",en:"Activity"},{k:"vet",he:"וטרינר ומניעה",en:"Vet & prevention"},{k:"tips",he:"טיפ",en:"Tip"}],
   items:[
