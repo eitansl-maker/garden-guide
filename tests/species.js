@@ -22,6 +22,17 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   await p.evaluate(()=>{CC="DE"});await p.click('#t1');ok((await p.innerText('body')).includes('Heidelbeere'),'DE: blueberry visible with German name');
   await p.evaluate(()=>{CC="IL"});await p.click('#t2');await p.click('#t1');ok(!(await p.innerText('body')).includes('Heidelbeere'),'IL: blueberry hidden by country');
   ok(await p.evaluate(()=>DOMAINS.pets.items.find(x=>x.id==='dog').de.name==='Hund'),'pet German content applied')}
+ // attrs.wiki from the database gives new pets and fish a photo title
+ {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);
+  ok(await p.evaluate(()=>{SPECIES.apply({species:[{domain:'aquarium',key:'zzfish',attrs:{emoji:'🐟',wiki:'Guppy'}},{domain:'plants',key:'zzplant',attrs:{emoji:'🌱',pack:'veg',wiki:'Tomato'}}],info:[{domain:'aquarium',key:'zzfish',lang:'en',content:{name:'ZZ',feed:'f',water:'w',move:'m',vet:'v',tips:'t'}},{domain:'plants',key:'zzplant',lang:'he',content:{name:'ZZ',water:'w',why:'y',sun:'s',tips:'t',harvest:'h'}}],country:[]});return DOMAINS.aquarium.items.find(x=>x.id==='zzfish').wiki==='Guppy'&&CROPS.find(c=>c.id==='zzplant').wiki==='Tomato'}),'new species take their photo title from attrs.wiki')}
+ // pet log remembers the animal: typing a known name fills the type/breed
+ {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());p.on('dialog',d=>d.accept());await p.goto(URL);await p.evaluate(()=>setDomain('pets'));await p.click('#t2');await p.click('[data-f=log]');
+  await p.fill('#lp','Rexy');await p.fill('#lc','Labrador');await p.click('#la');
+  ok(await p.inputValue('#lp')==='Rexy'&&await p.inputValue('#lc')==='Labrador','single pet: name and breed prefilled after saving');
+  await p.fill('#lp','Mitzi');await p.fill('#lc','Cat');await p.click('#la');
+  await p.fill('#lp','');await p.fill('#lc','');await p.fill('#lp','Rexy');
+  ok(await p.inputValue('#lc')==='Labrador','known name fills breed');
+  await p.fill('#lp','Mitzi');ok(await p.inputValue('#lc')==='Cat','switching to another pet updates the breed')}
  // category chips: flowers and houseplants are separate from vegetables
  {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);await p.click('#t1');
   ok((await p.$$('[data-pk]')).length===3,'home has 3 category chips');
