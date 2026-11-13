@@ -49,6 +49,10 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   await p.evaluate(()=>{flog()});await p.waitForSelector('#rs');
   await p.selectOption('#rs','0');ok(await p.inputValue('#rn')==='Dr Cohen'&&await p.inputValue('#rp')==='0501234567','saved vet contact can be selected again');
   ok((await p.$eval('#vs',e=>getComputedStyle(e).width))!=='0px'&&await p.$eval('#vm',e=>getComputedStyle(e).fontSize)!=='','vet buttons are real full-width buttons')}
+ // credits screen and translated labels
+ {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);
+  for(const [l,re] of [['he',/קרדיטים/],['pl',/Źródła/],['de',/Quellen/]]){await p.evaluate(x=>setLang(x),l);await p.click('#t5').catch(()=>{});await p.evaluate(()=>{TAB='about';about()});ok(re.test(await p.innerText('#app')),l+': credits section shown')}
+  ok(await p.evaluate(()=>DOMAINS.pets.events.every(e=>e.de&&e.pl&&e.fi)&&DOMAINS.aquarium.events.every(e=>e.da&&e.pt)),'pet and fish event labels are translated')}
  // category chips: flowers and houseplants are separate from vegetables
  {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);await p.click('#t1');
   ok((await p.$$('[data-pk]')).length===3,'home has 3 category chips');
