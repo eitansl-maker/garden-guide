@@ -1,9 +1,9 @@
 // Species content from Supabase (species, species_info, species_country), merged into the app's local data.
 // Local data (crops.js, domains.js, i18n.js) stays the offline baseline; the database adds more species, more languages and per-country calendars.
 (function(){
-const LANGS=["he","en","de","da","fi","pt"],NEW=["de","da","fi","pt"];
+const LANGS=["he","en","de","da","fi","pt","pl"],NEW=["de","da","fi","pt","pl"];
 window.LANGS=LANGS;
-window.LANGNAME={he:"עברית",en:"English",de:"Deutsch",da:"Dansk",fi:"Suomi",pt:"Português"};
+window.LANGNAME={he:"עברית",en:"English",de:"Deutsch",da:"Dansk",fi:"Suomi",pt:"Português",pl:"Polski"};
 // English Wikipedia article titles (several fallbacks separated by |). The app looks up a free-licensed photo at runtime and shows the credit.
 const WIKI={tulip:"Tulip",daffodil:"Daffodil|Narcissus (plant)",hyacinth:"Hyacinthus orientalis",crocus:"Crocus",snowdrop:"Galanthus",lily_valley:"Lily of the valley",cornflower:"Centaurea cyanus",poppy:"Papaver rhoeas|Poppy",lavender:"Lavandula|Lavender",rose:"Rose",peony:"Peony",dahlia:"Dahlia",sweetpea:"Sweet pea|Lathyrus odoratus",cosmos:"Cosmos bipinnatus|Cosmos (plant)",zinnia:"Zinnia",pansy:"Pansy",primrose:"Primula vulgaris|Primrose",forgetmenot:"Myosotis",hydrangea:"Hydrangea",geranium:"Pelargonium",petunia:"Petunia",calendula:"Calendula officinalis",nasturtium:"Tropaeolum majus|Nasturtium",foxglove:"Digitalis purpurea|Foxglove",lupin:"Lupinus|Lupin",harebell:"Campanula rotundifolia|Harebell",bougainvillea:"Bougainvillea",anemone:"Anemone coronaria|Anemone",cyclamen:"Cyclamen persicum|Cyclamen",iris:"Iris (plant)",chrysanthemum:"Chrysanthemum",gerbera:"Gerbera jamesonii|Gerbera",marigold:"Tagetes|Marigold",sunflower:"Sunflower|Helianthus annuus",
 potato:"Potato",onion:"Onion",garlic:"Garlic",spinach:"Spinach",kale:"Kale",basil:"Basil",parsley:"Parsley",coriander:"Coriander",mint:"Mentha|Mint",rosemary:"Rosemary",thyme:"Thyme",dill:"Dill",chives:"Chives",sage:"Salvia officinalis|Sage",oregano:"Oregano",tomato:"Tomato",cucumber:"Cucumber",carrot:"Carrot",radish:"Radish",beet:"Beetroot|Beet",zucchini:"Zucchini",eggplant:"Eggplant",broccoli:"Broccoli",pepper:"Bell pepper|Capsicum",strawberry:"Strawberry",blueberry:"Blueberry",raspberry:"Raspberry",apple:"Apple",lemon:"Lemon",fig:"Common fig|Ficus carica",grape:"Grape",

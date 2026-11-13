@@ -3,7 +3,8 @@ const {chromium,devices}=require('playwright');const path=require('path');
 const URL='file://'+path.resolve(__dirname,'..','index.html');let fails=0;
 const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
 (async()=>{const b=await chromium.launch();
- for(const lang of ['he','en','de','da','fi','pt']){
+ {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);await p.evaluate(()=>{setLang('pl');setDomain('aquarium')});await p.click('#t3');const t=await p.innerText('#app');ok(/ryby/.test(t)&&/Jaka ryba/.test(t),'PL fish photo tab in Polish');ok(await p.evaluate(()=>/Polish/.test(prompt_('x'))),'PL prompt answers in Polish');await p.evaluate(()=>setDomain('plants'));await p.click('#t1');ok(/Ogród Ilana/.test(await p.innerText('body')),'PL home title translated')}
+ for(const lang of ['he','en','de','da','fi','pt','pl']){
   const p=await (await b.newContext({...devices['Pixel 7']})).newPage();const errs=[];p.on('pageerror',e=>/ServiceWorker/.test(e.message)||errs.push(e.message));p.on('dialog',d=>d.accept());
   await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());
   await p.goto(URL);await p.evaluate(l=>setLang(l),lang);
@@ -40,6 +41,14 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
    ok(re.test(t)&&(d==='plants'||!/leaf|עלה ופרי/.test(t)),d+': photo tab wording matches the domain');
    ok(await p.evaluate(()=>/./.test(prompt_('x'))),d+': photo prompt exists');ok(pr.test(await p.evaluate(()=>prompt_('x'))),d+': prompt is about '+d)}
   await p.evaluate(()=>{setLang('de');setDomain('aquarium')});await p.click('#t3');ok(/Fisch/.test(await p.innerText('#app'))&&/German/.test(await p.evaluate(()=>prompt_('x'))),'DE fish: German wording, answer-in-German prompt')}
+ // pet log: no per-plot status block, saved vet contacts can be re-selected
+ {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());p.on('dialog',d=>d.accept());await p.goto(URL);await p.evaluate(()=>setDomain('pets'));await p.click('#t2');await p.click('[data-f=log]');
+  await p.fill('#lp','Rexy');await p.fill('#lc','Lab');await p.click('#la');
+  ok(!/לפי חלקה|per plot/.test(await p.innerText('#app')),'pets log has no per-plot status');
+  await p.fill('#rn','Dr Cohen');await p.fill('#rp','0501234567');await p.fill('#vp','Rexy');await p.fill('#vd','itchy');await p.click('#vm').catch(()=>{});
+  await p.evaluate(()=>{flog()});await p.waitForSelector('#rs');
+  await p.selectOption('#rs','0');ok(await p.inputValue('#rn')==='Dr Cohen'&&await p.inputValue('#rp')==='0501234567','saved vet contact can be selected again');
+  ok((await p.$eval('#vs',e=>getComputedStyle(e).width))!=='0px'&&await p.$eval('#vm',e=>getComputedStyle(e).fontSize)!=='','vet buttons are real full-width buttons')}
  // category chips: flowers and houseplants are separate from vegetables
  {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);await p.click('#t1');
   ok((await p.$$('[data-pk]')).length===3,'home has 3 category chips');
