@@ -219,8 +219,8 @@ function home(){if(DOM!=="plants")return petHome();const t=T(),D=DOMAINS[DOM],PK
  const chips=PK.length>1?`<div style="display:flex;gap:6px;margin-bottom:10px">`+PK.map(x=>`<button class="card" data-pk="${x.id}" style="flex:1;padding:8px;font-size:14px;${x.id===HPK?"background:var(--g);color:#fff":""}">${x.icon} ${(PN[x.id]||x.name)[L]||x.name.en}</button>`).join("")+`</div>`:"";
  app.innerHTML=chips+(CC!=="IL"?`<p class="note">${t.calNote}</p>`:"")+(HPK==="house"?"":`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`))+`<h2>${t.all}</h2>`+(ok?grid(inP):`<p class="note">🔒 ${lockText[L]}</p>`)+`<p class="draft">${t.draft}</p>`;
  app.querySelectorAll("[data-pk]").forEach(b=>b.onclick=()=>{HPK=b.dataset.pk;try{localStorage.setItem("hpack",HPK)}catch(e){}home()});
- app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id))}
-function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${crop(c).name}</b></button>`).join("")+`</div>`}
+ lazyImgs(app);app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id))}
+function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e"${c.wiki?` data-w="${esc(c.wiki)}"`:""}>${c.emoji}</div><b>${crop(c).name}</b></button>`).join("")+`</div>`}
 function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  app.innerHTML=`<button class="back" id="b">${t.back}</button><div class="detail"><h3>${c.emoji} ${c.name}</h3>
  <div class="row"><small>${t.when}</small>${sowMonths(c).map(x=>t.months[x-1]).join(", ")}</div>
@@ -229,9 +229,10 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="row"><small>${t.sun}</small>${c.sun}</div>
  <div class="row"><small>${t.harvest}</small>${c.harvest}</div>
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
- document.getElementById("b").onclick=home;scrollTo(0,0)}
+ document.getElementById("b").onclick=home;scrollTo(0,0);
+ if(c.wiki){const h=document.createElement("div");h.id="pimg";app.querySelector(".detail h3").after(h);wikiImg(c.wiki).then(o=>{if(!o||!h.isConnected)return;const im=document.createElement("img");im.alt=c.name;im.src=o.src;im.style.cssText="width:100%;max-height:240px;object-fit:cover;border-radius:12px";im.onload=()=>{h.appendChild(im);const n=document.createElement("p");n.className="note";const l=document.createElement("a");l.href=o.page;l.target="_blank";l.rel="noopener";l.textContent="📷 "+(o.by||"Wikimedia Commons")+" · "+o.lic;n.appendChild(l);h.appendChild(n)}})}}
 head();SYNC.init();SPECIES.load();gated()?gate():(tabs(),diag());
-const VER="v60";
+const VER="v61";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
