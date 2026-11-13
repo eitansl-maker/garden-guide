@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=38"></script><script src="domains.js?v=38"></script><script src="farmer.js?v=38"></script><script src="i18n.js?v=38"></script><script src="sync.js?v=38"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=39"></script><script src="domains.js?v=39"></script><script src="farmer.js?v=39"></script><script src="i18n.js?v=39"></script><script src="sync.js?v=39"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -32,7 +32,8 @@ const COUNTRIES={IL:{clim:"med",he:"ישראל",en:"Israel",heIn:"בישראל",
 let CC="IL";try{CC=localStorage.getItem("country")||"IL"}catch(e){}if(!COUNTRIES[CC])CC="IL";
 const cName=()=>COUNTRIES[CC][L==="he"?"he":"en"],cIn=()=>L==="he"?COUNTRIES[CC].heIn:"in "+COUNTRIES[CC].en;
 let DOM="plants";try{DOM=localStorage.getItem("domain")||"plants"}catch(e){}if(!DOMAINS[DOM])DOM="plants";
-function setDomain(d){if(!DOMAINS[d])return;DOM=d;try{localStorage.setItem("domain",d)}catch(e){}tabs()}
+function setDomain(d){if(!DOMAINS[d])return;DOM=d;try{localStorage.setItem("domain",d)}catch(e){}SYNC.saveDomain(d);tabs()}
+SYNC.onProfile=p=>{let ch=false;if(p.country&&COUNTRIES[p.country]&&p.country!==CC){CC=p.country;ch=true}if(p.domain&&DOMAINS[p.domain]&&p.domain!==DOM){DOM=p.domain;ch=true}if(ch&&document.getElementById("tabs")){tabs();if(TAB==="home")home();else if(TAB==="help")help()}}
 function setCountry(c){if(!COUNTRIES[c])return;CC=c;try{localStorage.setItem("country",c)}catch(e){}SYNC.saveCountry(c)}
 const T=()=>I18N[L],crop=c=>L==="he"?c:Object.assign({},c,T().crops[c.id]);
 let TAB="diag";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="home"?"on":""}" id="t1">${DOM==="plants"?t.tabHome:DOMAINS[DOM].tab[L]}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button><button class="ab ${TAB=="about"?"on":""}" id="t5">${t.tabAbout}</button>`;t5.onclick=()=>{TAB="about";tabs();about()};t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
@@ -172,7 +173,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v38";
+const VER="v39";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>

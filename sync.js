@@ -35,7 +35,7 @@ S.sync=async function(){
   if(!S.sb||!S.user||S.busy)return;S.busy=true;S.err="";
   try{
     const sb=S.sb;
-    await syncLog(sb);await syncReminders(sb);
+    await syncProfile(sb);await syncLog(sb);await syncReminders(sb);
     S.last=Date.now();
   }catch(e){S.err=(e&&e.message)||String(e)}
   S.busy=false;if(S.onChange)S.onChange();
@@ -103,6 +103,19 @@ async function syncReminders(sb){
 }
 
 S.saveCountry=async function(c){if(!S.sb||!S.user)return;try{await S.sb.from("profiles").update({country:c}).eq("id",S.user.id)}catch(e){}};
+S.saveDomain=async function(d){if(!S.sb||!S.user)return;try{await S.sb.from("profiles").update({domains:[d]}).eq("id",S.user.id)}catch(e){}};
+// Profile: a choice made on this device wins and is pushed; with no local choice yet, the cloud profile is adopted (S.onProfile applies it).
+async function syncProfile(sb){
+  const r=await sb.from("profiles").select("country,domains").eq("id",S.user.id);
+  const p=r&&r.data&&r.data[0];if(!p)return;
+  const raw=k=>{try{return localStorage.getItem(k)}catch(e){return null}},put=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+  const lc=raw("country"),ld=raw("domain"),up={};
+  if(lc===null)put("country",p.country);else if(lc!==p.country)up.country=lc;
+  const cd=(p.domains||[])[0];
+  if(ld===null)cd&&put("domain",cd);else if(ld!==cd)up.domains=[ld];
+  if(Object.keys(up).length)must(await sb.from("profiles").update(up).eq("id",S.user.id));
+  if(S.onProfile)S.onProfile({country:raw("country"),domain:raw("domain")});
+}
 S.knowledge=async function(country,domain,lang){
   const r=await S.sb.from("knowledge_items").select("topic,content,source_url,fetched_at,valid_until").eq("country",country).eq("domain",domain).eq("lang",lang);
   if(r.error)throw r.error;return r.data||[];
