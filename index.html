@@ -193,8 +193,17 @@ function head(){const t=T();document.documentElement.lang=L;document.documentEle
 function sowMonths(c){const C_=COUNTRIES[CC],k=C_.clim;let r;
  if(k==="med")r=c.months;else if(k==="medw")r=c.medw||c.months;else if(!c.cool)r=c.months;else r=k==="cold"?c.cool.map(x=>x%12+1):c.cool;
  return C_.south?r.map(x=>(x+5)%12+1).sort((a,b)=>a-b):r}
-function petHome(){const t=T(),D=DOMAINS[DOM];app.innerHTML=`<p class="note">⚠️ ${D.warn[L]}</p><h2>${D.tab[L]}</h2><div class="grid">`+D.items.map(x=>`<button class="card" data-p="${x.id}"><div class="e">${x.emoji}</div><b>${x[L].name}</b></button>`).join("")+`</div><p class="draft">${t.draft}</p>`;
- app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const x=D.items.find(y=>y.id==b.dataset.p);app.innerHTML=`<button class="back" id="b">${t.back}</button><div class="detail"><h3>${x.emoji} ${x[L].name}</h3>`+D.fields.map(f=>`<div class="row"><small>${f[L]}</small>${x[L][f.k]}</div>`).join("")+`<p class="note">⚠️ ${D.warn[L]}</p></div>`;document.getElementById("b").onclick=home;scrollTo(0,0)})}
+// Free photos: looked up at runtime from Wikipedia/Wikimedia Commons by article title, only if the file is freely licensed; creator and license are shown. Cached in localStorage. Falls back to the emoji.
+const WI={};
+async function wikiImg(title){if(WI[title]!==undefined)return WI[title];const k="wi2:"+title;try{const c=localStorage.getItem(k);if(c){WI[title]=JSON.parse(c);return WI[title]}}catch(e){}
+ let o=null;try{const r=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(title));if(r.ok){const j=await r.json(),th=j.thumbnail&&j.thumbnail.source,m0=th&&th.match(/\/thumb\/[0-9a-f]\/[0-9a-f]{2}\/([^/]+)\//);
+  if(m0){const fn=decodeURIComponent(m0[1]),m=await(await fetch("https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=extmetadata&titles="+encodeURIComponent("File:"+fn))).json(),p=Object.values((m.query||{}).pages||{})[0],e=p&&p.imageinfo&&p.imageinfo[0]&&p.imageinfo[0].extmetadata;
+   if(e){const lic=(e.LicenseShortName&&e.LicenseShortName.value)||"";if(/^(CC|Public domain|PD)/i.test(lic))o={src:th,by:((e.Artist&&e.Artist.value)||"").replace(/<[^>]*>/g,"").trim().slice(0,80),lic:lic,page:"https://commons.wikimedia.org/wiki/File:"+encodeURIComponent(fn)}}}}}catch(e){}
+ WI[title]=o;try{if(o)localStorage.setItem(k,JSON.stringify(o))}catch(e){}return o}
+function lazyImgs(root){const els=[...root.querySelectorAll("[data-w]")];if(!els.length)return;const go=el=>wikiImg(el.dataset.w).then(o=>{if(!o||!el.isConnected)return;const im=document.createElement("img");im.alt="";im.src=o.src;im.style.cssText="width:100%;height:90px;object-fit:cover;border-radius:10px";im.onload=()=>{el.innerHTML="";el.appendChild(im);el.style.fontSize="0"}});
+ if(window.IntersectionObserver){const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){io.unobserve(en.target);go(en.target)}}));els.forEach(el=>io.observe(el))}else els.forEach(go)}
+function petHome(){const t=T(),D=DOMAINS[DOM];app.innerHTML=`<p class="note">⚠️ ${D.warn[L]}</p><h2>${D.tab[L]}</h2><div class="grid">`+D.items.map(x=>`<button class="card" data-p="${x.id}"><div class="e"${x.wiki?` data-w="${esc(x.wiki)}"`:""}>${x.emoji}</div><b>${x[L].name}</b></button>`).join("")+`</div><p class="draft">${t.draft}</p>`;lazyImgs(app);
+ app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const x=D.items.find(y=>y.id==b.dataset.p);app.innerHTML=`<button class="back" id="b">${t.back}</button><div class="detail"><h3>${x.emoji} ${x[L].name}</h3>${x.wiki?`<div id="pimg"></div>`:""}`+D.fields.map(f=>`<div class="row"><small>${f[L]}</small>${x[L][f.k]}</div>`).join("")+`<p class="note">⚠️ ${D.warn[L]}</p></div>`;document.getElementById("b").onclick=home;scrollTo(0,0);if(x.wiki)wikiImg(x.wiki).then(o=>{const h=document.getElementById("pimg");if(!o||!h)return;const im=document.createElement("img");im.alt=x[L].name;im.src=o.src;im.style.cssText="width:100%;max-height:240px;object-fit:cover;border-radius:12px";im.onload=()=>{h.appendChild(im);const c=document.createElement("p");c.className="note";const l=document.createElement("a");l.href=o.page;l.target="_blank";l.rel="noopener";l.textContent="📷 "+(o.by||"Wikimedia Commons")+" · "+o.lic;c.appendChild(l);h.appendChild(c)}})})}
 function packBlock(D,p,l){const ok=hasPack(DOM,p.id);return `<h2>${p.icon} ${p.name[L]}${ok?"":" 🔒"}</h2>`+(ok?(l.length?grid(l):""):`<p class="note">🔒 ${lockText[L]}</p>`)}
 function home(){if(DOM!=="plants")return petHome();const t=T(),D=DOMAINS[DOM],PK=D.packs||[],open_=c=>!PK.length||hasPack(DOM,cropPack(c,DOM)),inPack=p=>CROPS.filter(c=>cropPack(c,DOM)===p.id),now=CROPS.filter(c=>open_(c)&&sowMonths(c).includes(m));
  app.innerHTML=(CC!=="IL"?`<p class="note">${t.calNote}</p>`:"")+`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+(PK.length?PK.map(p=>packBlock(D,p,inPack(p))).join(""):grid(CROPS))+`<p class="draft">${t.draft}</p>`;
@@ -210,7 +219,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v51";
+const VER="v52";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
