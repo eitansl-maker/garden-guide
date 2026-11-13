@@ -33,6 +33,13 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   await p.fill('#lp','');await p.fill('#lc','');await p.fill('#lp','Rexy');
   ok(await p.inputValue('#lc')==='Labrador','known name fills breed');
   await p.fill('#lp','Mitzi');ok(await p.inputValue('#lc')==='Cat','switching to another pet updates the breed')}
+ // photo diagnosis follows the domain: fish and pets get their own wording and prompt
+ {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);
+  for(const [d,re,pr] of [['aquarium',/דג|fish/i,/אקווריום|aquarium/i],['pets',/חיה|pet|animal/i,/חיית|pet/i],['plants',/עלה|leaf/i,/מגדל|crops/i]]){
+   await p.evaluate(x=>setDomain(x),d);await p.click('#t3');const t=await p.innerText('#app');
+   ok(re.test(t)&&(d==='plants'||!/leaf|עלה ופרי/.test(t)),d+': photo tab wording matches the domain');
+   ok(await p.evaluate(()=>/./.test(prompt_('x'))),d+': photo prompt exists');ok(pr.test(await p.evaluate(()=>prompt_('x'))),d+': prompt is about '+d)}
+  await p.evaluate(()=>{setLang('de');setDomain('aquarium')});await p.click('#t3');ok(/Fisch/.test(await p.innerText('#app'))&&/German/.test(await p.evaluate(()=>prompt_('x'))),'DE fish: German wording, answer-in-German prompt')}
  // category chips: flowers and houseplants are separate from vegetables
  {const p=await (await b.newContext({...devices['Pixel 7']})).newPage();await p.route('https://eoyfkteuzyqychgkzihv.supabase.co/**',r=>r.abort());await p.goto(URL);await p.click('#t1');
   ok((await p.$$('[data-pk]')).length===3,'home has 3 category chips');
