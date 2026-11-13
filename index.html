@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=37"></script><script src="farmer.js?v=37"></script><script src="i18n.js?v=37"></script><script src="sync.js?v=37"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=38"></script><script src="domains.js?v=38"></script><script src="farmer.js?v=38"></script><script src="i18n.js?v=38"></script><script src="sync.js?v=38"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -31,9 +31,11 @@ const COUNTRIES={IL:{clim:"med",he:"ישראל",en:"Israel",heIn:"בישראל",
  US:{clim:"cool",he:"ארצות הברית",en:"United States",heIn:"בארצות הברית",src:[{n:"USDA Plant Hardiness Zone Map",u:"https://planthardiness.ars.usda.gov/"}]}};
 let CC="IL";try{CC=localStorage.getItem("country")||"IL"}catch(e){}if(!COUNTRIES[CC])CC="IL";
 const cName=()=>COUNTRIES[CC][L==="he"?"he":"en"],cIn=()=>L==="he"?COUNTRIES[CC].heIn:"in "+COUNTRIES[CC].en;
+let DOM="plants";try{DOM=localStorage.getItem("domain")||"plants"}catch(e){}if(!DOMAINS[DOM])DOM="plants";
+function setDomain(d){if(!DOMAINS[d])return;DOM=d;try{localStorage.setItem("domain",d)}catch(e){}tabs()}
 function setCountry(c){if(!COUNTRIES[c])return;CC=c;try{localStorage.setItem("country",c)}catch(e){}SYNC.saveCountry(c)}
 const T=()=>I18N[L],crop=c=>L==="he"?c:Object.assign({},c,T().crops[c.id]);
-let TAB="diag";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="home"?"on":""}" id="t1">${t.tabHome}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button><button class="ab ${TAB=="about"?"on":""}" id="t5">${t.tabAbout}</button>`;t5.onclick=()=>{TAB="about";tabs();about()};t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
+let TAB="diag";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="home"?"on":""}" id="t1">${DOM==="plants"?t.tabHome:DOMAINS[DOM].tab[L]}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button><button class="ab ${TAB=="about"?"on":""}" id="t5">${t.tabAbout}</button>`;t5.onclick=()=>{TAB="about";tabs();about()};t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
 let FT="log";
 const FS={he:{log:"📒 יומן",ask:"💬 שאל יועץ",guides:"📚 מדריכים",types:["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"],
  newRec:"➕ רישום חדש",kind:"סוג רישום",kDone:"בוצע (עשיתי)",kIns:"הוראת מדריך (לביצוע)",by:"שם המדריך",plot:"חלקה",plotPh:"למשל: חלקה צפונית",crop:"גידול",cropPh:"למשל: תות",date:"תאריך",dueDate:"תאריך לביצוע",type:"סוג טיפול",prod:"חומר / דשן",dose:"מינון / כמות",notes:"הערות",save:"שמור ביומן",saveIns:"שמור הוראה",
@@ -92,7 +94,7 @@ async function gem(k,parts,st,only){const B="https://generativelanguage.googleap
   throw new Error(nm+": failed")};
  try{const w=await Promise.any(names.map(one));return only?w:w.text}catch(e){const es=(e.errors||[e]).map(x=>x.message);const k_=es.find(x=>/^KEY:/.test(x));throw new Error(k_?k_.slice(5):es.join(" | "))}}
 async function speedtest(k,out){out.style.display="block";out.innerHTML="";for(const n of GEM_MODELS){out.innerHTML+=`<div>⏳ ${n.replace("models/","")}...</div>`;const t0=Date.now();try{await gem(k,[{text:"ענה במילה אחת: שלום"}],()=>{},[n]);out.lastChild.textContent=`✅ ${n.replace("models/","")}: ${Math.round((Date.now()-t0)/100)/10}s`}catch(e){out.lastChild.textContent=`❌ ${e.message}`}}}
-function prompt_(c){return L==="he"?"אני מגדל "+cIn()+". בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":"I grow crops "+cIn()+". The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly in English: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label."}
+function prompt_(c){if(DOM==="pets")return L==="he"?"יש לי כלב או חתול "+cIn()+". בתמונה "+(c||"החיה או הבעיה")+". מה אתה רואה ומה האפשרויות לפי סבירות? מה לבדוק, מה אפשר לעשות בבית, ומתי חייבים וטרינר. אל תמליץ על תרופות ומינונים. ענה בעברית קצרה: זה אומדן ולא תחליף לווטרינר.":"I have a dog or cat "+cIn()+". The photo shows "+(c||"the animal or problem")+". What do you see and what are the options by likelihood? What to check, what can be done at home, and when a vet is a must. Do not recommend medications or doses. Answer briefly in English: this is an estimate, not a replacement for a vet.";return L==="he"?"אני מגדל "+cIn()+". בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":"I grow crops "+cIn()+". The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly in English: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label."}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
 const rg=()=>{try{return JSON.parse(localStorage.getItem("rem")||"[]")}catch(e){return[]}};
 const rs=a=>{try{localStorage.setItem("rem",JSON.stringify(a))}catch(e){}SYNC.touch()};
@@ -119,7 +121,7 @@ function help(){const t=T();app.innerHTML=ctryHtml()+acctHtml()+`<div class="det
  acctBind();cs.onchange=()=>{setCountry(cs.value)};
  sk.onclick=()=>{try{localStorage.setItem("gkey",key.value.trim());alert(t.saved)}catch(e){alert("error")}};
  st.onclick=()=>{const k=key.value.trim();if(!k){alert(t.diagNoKey);return}speedtest(k,so)}}
-function ctryHtml(){const t=T();return `<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.ctryTitle}</h3><p class="note">${t.ctryNote}</p><select id="cs" style="width:100%;padding:10px;font:inherit">${Object.keys(COUNTRIES).map(c=>`<option value="${c}"${c===CC?" selected":""}>${COUNTRIES[c][L==="he"?"he":"en"]}</option>`).join("")}</select></div>`}
+function ctryHtml(){const t=T();return `<div class="detail" style="margin-bottom:12px"><h3>🧭 ${L==="he"?"תחום":"Area"}</h3><select id="ds" style="width:100%;padding:10px;font:inherit" onchange="setDomain(this.value)">${Object.keys(DOMAINS).map(d=>`<option value="${d}"${d===DOM?" selected":""}>${DOMAINS[d].icon} ${DOMAINS[d].name[L]}</option>`).join("")}</select></div>`+`<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.ctryTitle}</h3><p class="note">${t.ctryNote}</p><select id="cs" style="width:100%;padding:10px;font:inherit">${Object.keys(COUNTRIES).map(c=>`<option value="${c}"${c===CC?" selected":""}>${COUNTRIES[c][L==="he"?"he":"en"]}</option>`).join("")}</select></div>`}
 async function knRender(){const t=T(),k=document.getElementById("kn");if(!k)return;
  const src=COUNTRIES[CC].src.map(x=>`<li><a href="${x.u}" target="_blank" rel="noopener"></a></li>`).join("");
  k.innerHTML=`<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.knTitle} (${cName()})</h3><div id="kb"></div><p class="note">${t.knSrc}</p><ul id="ks">${src}</ul></div>`;
@@ -154,7 +156,9 @@ function head(){const t=T();document.documentElement.lang=L;document.documentEle
  document.getElementById("ac").onclick=()=>{TAB="help";tabs();help();scrollTo(0,0)};
  document.getElementById("lg").onclick=()=>setLang(L==="he"?"en":"he")}
 function sowMonths(c){const k=COUNTRIES[CC].clim;if(k==="med"||!c.cool)return c.months;return k==="cold"?c.cool.map(x=>x%12+1):c.cool}
-function home(){const t=T(),now=CROPS.filter(c=>sowMonths(c).includes(m));
+function petHome(){const t=T(),D=DOMAINS[DOM];app.innerHTML=`<p class="note">⚠️ ${D.warn[L]}</p><h2>${D.tab[L]}</h2><div class="grid">`+D.items.map(x=>`<button class="card" data-p="${x.id}"><div class="e">${x.emoji}</div><b>${x[L].name}</b></button>`).join("")+`</div><p class="draft">${t.draft}</p>`;
+ app.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const x=D.items.find(y=>y.id==b.dataset.p);app.innerHTML=`<button class="back" id="b">${t.back}</button><div class="detail"><h3>${x.emoji} ${x[L].name}</h3>`+D.fields.map(f=>`<div class="row"><small>${f[L]}</small>${x[L][f.k]}</div>`).join("")+`<p class="note">⚠️ ${D.warn[L]}</p></div>`;document.getElementById("b").onclick=home;scrollTo(0,0)})}
+function home(){if(DOM!=="plants")return petHome();const t=T(),now=CROPS.filter(c=>sowMonths(c).includes(m));
  app.innerHTML=(COUNTRIES[CC].clim!=="med"?`<p class="note">${t.calNote}</p>`:"")+`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
  app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id))}
 function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${crop(c).name}</b></button>`).join("")+`</div>`}
@@ -168,7 +172,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v37";
+const VER="v38";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
