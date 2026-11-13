@@ -2,7 +2,7 @@
 // Needs the tables from knowledge-agent/garden-app-sql/01-core.sql. The key below is the PUBLISHABLE key (safe in the browser, protected by RLS).
 (function(){
 const SB_URL="https://eoyfkteuzyqychgkzihv.supabase.co",SB_KEY="sb_publishable_u4OPUHRXvkJ_yrWtcInTeg_OFfr5IKZ";
-const DOMS=["plants","pets"];const dom=x=>DOMS.includes(x.dom)?x.dom:"plants";
+const DOMS=["plants","pets","aquarium"];const dom=x=>DOMS.includes(x.dom)?x.dom:"plants";
 const TYPES=["spray","pest","fertilize","irrigate","prune","sow","harvest","other"];
 const HE_TYPES=["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"];
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
