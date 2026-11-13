@@ -20,10 +20,18 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=35"></script><script src="farmer.js?v=35"></script><script src="i18n.js?v=35"></script><script src="sync.js?v=35"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=36"></script><script src="farmer.js?v=36"></script><script src="i18n.js?v=36"></script><script src="sync.js?v=36"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
+const COUNTRIES={IL:{he:"ישראל",en:"Israel",heIn:"בישראל",src:[{n:"משרד החקלאות ופיתוח הכפר",ne:"Ministry of Agriculture and Rural Development",u:"https://www.gov.il/he/departments/ministry_of_agriculture_and_rural_development"},{n:"שה\"ם (שירות ההדרכה)",ne:"Shaham (Extension Service)",u:"https://www.moag.gov.il/shaham"}]},
+ FI:{he:"פינלנד",en:"Finland",heIn:"בפינלנד",src:[{n:"Ruokavirasto (Finnish Food Authority): home gardeners",u:"https://www.ruokavirasto.fi/en/plants/garden-plants/home-gardeners"}]},
+ DK:{he:"דנמרק",en:"Denmark",heIn:"בדנמרק",src:[{n:"Miljøstyrelsen (Danish EPA): pesticides",u:"https://eng.mst.dk/chemicals/pesticides"}]},
+ DE:{he:"גרמניה",en:"Germany",heIn:"בגרמניה",src:[{n:"BVL: authorised plant protection products",u:"https://bvl.bund.de/EN/Tasks/04_Plant_protection_products/01_ppp_tasks/02_ppp_AuthorisationReviewActSub/01_ppps_authorised/ppp_authorised_node.html"}]},
+ US:{he:"ארצות הברית",en:"United States",heIn:"בארצות הברית",src:[{n:"USDA Plant Hardiness Zone Map",u:"https://planthardiness.ars.usda.gov/"}]}};
+let CC="IL";try{CC=localStorage.getItem("country")||"IL"}catch(e){}if(!COUNTRIES[CC])CC="IL";
+const cName=()=>COUNTRIES[CC][L==="he"?"he":"en"],cIn=()=>L==="he"?COUNTRIES[CC].heIn:"in "+COUNTRIES[CC].en;
+function setCountry(c){if(!COUNTRIES[c])return;CC=c;try{localStorage.setItem("country",c)}catch(e){}SYNC.saveCountry(c)}
 const T=()=>I18N[L],crop=c=>L==="he"?c:Object.assign({},c,T().crops[c.id]);
 let TAB="diag";function tabs(){const t=T();document.getElementById("tabs").innerHTML=`<button class="${TAB=="diag"?"on":""}" id="t3">${t.tabDiag}</button><button class="${TAB=="farm"?"on":""}" id="t2">${t.tabFarm}</button><button class="${TAB=="home"?"on":""}" id="t1">${t.tabHome}</button><button class="${TAB=="help"?"on":""}" id="t4">${t.tabHelp}</button><button class="ab ${TAB=="about"?"on":""}" id="t5">${t.tabAbout}</button>`;t5.onclick=()=>{TAB="about";tabs();about()};t3.onclick=()=>{TAB="diag";tabs();diag()};t4.onclick=()=>{TAB="help";tabs();help()};t1.onclick=()=>{TAB="home";tabs();home()};t2.onclick=()=>{TAB="farm";tabs();farm()}}
 let FT="log";
@@ -44,7 +52,7 @@ const esc=x=>String(x||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const tyl=x=>x.ti!=null?FSx().types[x.ti]:x.type;
 function farm(){const f=FSx();app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+["log","ask","guides"].map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
  app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{FT=b.dataset.f;farm()});({log:flog,ask:fask,guides:fguides})[FT]()}
-function fguides(){const t=T();fb.innerHTML=`<p>${t.farmIntro}</p>`+FARM.map(g=>{const f=L==="he"?g:g.en;return `<div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`}).join("")}
+function fguides(){const t=T();fb.innerHTML=`<div id="kn"></div><p>${t.farmIntro}</p>`+FARM.map(g=>{const f=L==="he"?g:g.en;return `<div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`}).join("");knRender()}
 function flog(){const f=FSx(),ALL=lg(),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
  const today=new Date().toISOString().slice(0,10);
  const last=plots.map(p=>{const e=L_.filter(x=>x.plot===p).sort((a,b)=>b.date.localeCompare(a.date));const l=e[0];const ty={};e.forEach(x=>{const k=tyl(x);if(!ty[k])ty[k]=x});return `<div class="detail" style="margin-bottom:8px"><b>${esc(p)}</b> · ${esc(l.crop)}<br><small>${f.lastT}: ${esc(tyl(l))} · ${l.date}${l.product?" ("+esc(l.product)+")":""}</small><br><small>${Object.entries(ty).map(([k,x])=>esc(k)+" "+x.date).join(" · ")}</small></div>`}).join("");
@@ -70,7 +78,7 @@ function flog(){const f=FSx(),ALL=lg(),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.
 function fask(){const f=FSx();fb.innerHTML=`<div class="detail"><h3>${f.askT}</h3><p class="note">${f.askNote}</p><textarea id="aq" rows="4" style="width:100%;padding:8px;font:inherit" placeholder="${f.askPh}"></textarea><button class="card" id="ab" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${f.askBtn}</button><div id="ao" class="ilan" style="display:none;white-space:pre-wrap"></div><p class="note">${f.askKey}</p></div>`;
  ab.onclick=async()=>{let k="";try{k=localStorage.getItem("gkey")||""}catch(e){}if(!k){alert(f.askNoKey);return}if(!aq.value.trim())return;
   ao.style.display="block";ao.innerHTML='<span class="spin"></span>'+f.think;ab.disabled=true;
-  try{ao.textContent=await gem(k,[{text:f.askPrompt+aq.value.trim()}],n=>ao.innerHTML=`<span class="spin"></span>${f.think} (${n})`)}catch(e){ao.textContent=f.err+e.message}ab.disabled=false}}
+  try{ao.textContent=await gem(k,[{text:f.askPrompt.replace(L==="he"?"בישראל":"in Israel",cIn())+aq.value.trim()}],n=>ao.innerHTML=`<span class="spin"></span>${f.think} (${n})`)}catch(e){ao.textContent=f.err+e.message}ab.disabled=false}}
 // Update when Google retires a model. All are tried in parallel; first answer wins.
 const GEM_MODELS=["models/gemini-3.5-flash","models/gemini-3.6-flash","models/gemini-3.5-flash-lite","models/gemini-3.8-flash"];
 async function gem(k,parts,st,only){const B="https://generativelanguage.googleapis.com/v1beta/",ctl=new AbortController(),names=only||GEM_MODELS;st(names.map(n=>n.replace("models/","")).join(" / "));
@@ -84,7 +92,7 @@ async function gem(k,parts,st,only){const B="https://generativelanguage.googleap
   throw new Error(nm+": failed")};
  try{const w=await Promise.any(names.map(one));return only?w:w.text}catch(e){const es=(e.errors||[e]).map(x=>x.message);const k_=es.find(x=>/^KEY:/.test(x));throw new Error(k_?k_.slice(5):es.join(" | "))}}
 async function speedtest(k,out){out.style.display="block";out.innerHTML="";for(const n of GEM_MODELS){out.innerHTML+=`<div>⏳ ${n.replace("models/","")}...</div>`;const t0=Date.now();try{await gem(k,[{text:"ענה במילה אחת: שלום"}],()=>{},[n]);out.lastChild.textContent=`✅ ${n.replace("models/","")}: ${Math.round((Date.now()-t0)/100)/10}s`}catch(e){out.lastChild.textContent=`❌ ${e.message}`}}}
-function prompt_(c){return L==="he"?"אני מגדל בישראל. בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":"I grow crops in Israel. The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly in English: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label."}
+function prompt_(c){return L==="he"?"אני מגדל "+cIn()+". בתמונה "+(c||"צמח או פרי")+". מה אתה רואה: מחלה, מזיק, מחסור או בעיית השקיה? מה לעשות? ענה בעברית קצרה וברורה: מה זה נראה, כמה אפשרויות לפי סבירות, מה לבדוק כדי לוודא, ומה לעשות. אם נדרש טיפול כימי, אל תמליץ על מינון, הפנה ליועץ שה\"ם ולתווית התכשיר.":"I grow crops "+cIn()+". The photo shows "+(c||"a plant or fruit")+". Do you see a disease, pest, deficiency or watering problem? What should I do? Answer briefly and clearly in English: what it looks like, options by likelihood, what to check, what to do. For chemical treatment give no dosage; refer to an extension officer and the product label."}
 function shrink(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const s=Math.min(1,1024/Math.max(i.width,i.height)),c=document.createElement("canvas");c.width=i.width*s;c.height=i.height*s;c.getContext("2d").drawImage(i,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.8).split(",")[1])};i.onerror=no;i.src=URL.createObjectURL(f)})}
 const rg=()=>{try{return JSON.parse(localStorage.getItem("rem")||"[]")}catch(e){return[]}};
 const rs=a=>{try{localStorage.setItem("rem",JSON.stringify(a))}catch(e){}SYNC.touch()};
@@ -106,11 +114,25 @@ let IMG=null,HIST=[];function diag(){IMG=null;HIST=[];const t=T();app.innerHTML=
   try{const a=await gem(k,[{text:ctx},{inline_data:{mime_type:"image/jpeg",data:IMG}}],()=>{});HIST.push([q,a]);d.lastChild.textContent=a}catch(e){d.lastChild.textContent=t.diagErr+" "+e.message}fs.disabled=false};
 
 }
-function help(){const t=T();app.innerHTML=acctHtml()+`<div class="detail"><h3>🔑 ${t.helpTitle}</h3><p>${t.helpWhy}</p><ol>${t.helpSteps.map(x=>`<li style="margin:8px 0">${x}</li>`).join("")}</ol><p><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;background:var(--g);color:#fff">${t.helpOpen}</a></p><h4>${t.helpKeyBox}</h4><input id="key" type="password" style="width:100%;padding:10px;font:inherit" placeholder="AIza..."><div style="display:flex;gap:8px;margin-top:8px"><button class="card" id="sk" style="flex:1;background:var(--g);color:#fff">${t.save}</button><button class="card" id="st" style="flex:1">${t.speed}</button></div><div id="so" class="ilan" style="display:none"></div><p class="note">${t.helpSafe}</p><h4>${t.helpFaq}</h4><ul>${t.helpQ.map(x=>`<li style="margin:6px 0">${x}</li>`).join("")}</ul></div>`;
+function help(){const t=T();app.innerHTML=ctryHtml()+acctHtml()+`<div class="detail"><h3>🔑 ${t.helpTitle}</h3><p>${t.helpWhy}</p><ol>${t.helpSteps.map(x=>`<li style="margin:8px 0">${x}</li>`).join("")}</ol><p><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="card" style="display:block;text-decoration:none;background:var(--g);color:#fff">${t.helpOpen}</a></p><h4>${t.helpKeyBox}</h4><input id="key" type="password" style="width:100%;padding:10px;font:inherit" placeholder="AIza..."><div style="display:flex;gap:8px;margin-top:8px"><button class="card" id="sk" style="flex:1;background:var(--g);color:#fff">${t.save}</button><button class="card" id="st" style="flex:1">${t.speed}</button></div><div id="so" class="ilan" style="display:none"></div><p class="note">${t.helpSafe}</p><h4>${t.helpFaq}</h4><ul>${t.helpQ.map(x=>`<li style="margin:6px 0">${x}</li>`).join("")}</ul></div>`;
  try{key.value=localStorage.getItem("gkey")||""}catch(e){}
- acctBind();
+ acctBind();cs.onchange=()=>{setCountry(cs.value)};
  sk.onclick=()=>{try{localStorage.setItem("gkey",key.value.trim());alert(t.saved)}catch(e){alert("error")}};
  st.onclick=()=>{const k=key.value.trim();if(!k){alert(t.diagNoKey);return}speedtest(k,so)}}
+function ctryHtml(){const t=T();return `<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.ctryTitle}</h3><p class="note">${t.ctryNote}</p><select id="cs" style="width:100%;padding:10px;font:inherit">${Object.keys(COUNTRIES).map(c=>`<option value="${c}"${c===CC?" selected":""}>${COUNTRIES[c][L==="he"?"he":"en"]}</option>`).join("")}</select></div>`}
+async function knRender(){const t=T(),k=document.getElementById("kn");if(!k)return;
+ const src=COUNTRIES[CC].src.map(x=>`<li><a href="${x.u}" target="_blank" rel="noopener"></a></li>`).join("");
+ k.innerHTML=`<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.knTitle} (${cName()})</h3><div id="kb"></div><p class="note">${t.knSrc}</p><ul id="ks">${src}</ul></div>`;
+ [...k.querySelectorAll("#ks a")].forEach((a,i)=>a.textContent=(L==="he"?COUNTRIES[CC].src[i].n:COUNTRIES[CC].src[i].ne||COUNTRIES[CC].src[i].n));
+ const kb=document.getElementById("kb");
+ let items=[];if(SYNC.sb){try{items=await SYNC.knowledge(CC,"plants",L)}catch(e){}}
+ if(!document.getElementById("kb"))return;
+ if(items.length){kb.innerHTML=items.map(i=>`<h4 class="kt"></h4><ul class="kl"></ul><p class="note ku"></p>`).join("");
+  [...kb.querySelectorAll(".kt")].forEach((e,i)=>e.textContent=items[i].content.title||items[i].topic);
+  [...kb.querySelectorAll(".kl")].forEach((e,i)=>(items[i].content.bullets||[]).forEach(b=>{const li=document.createElement("li");li.textContent=b;e.appendChild(li)}));
+  [...kb.querySelectorAll(".ku")].forEach((e,i)=>e.textContent=t.knUpdated+" "+String(items[i].fetched_at).slice(0,10))}
+ else if(SYNC.user){kb.innerHTML=`<p>${t.knNone}</p><button class="card" id="kreq" style="width:100%">${t.knAsk}</button>`;kreq.onclick=async()=>{kreq.disabled=true;kb.firstChild.textContent=t.think0;try{await SYNC.requestKnowledge(CC,"plants",L);knRender()}catch(e){kb.firstChild.textContent=t.diagErr+" "+e.message}}}
+ else kb.innerHTML=`<p class="note">${t.knLogin}</p>`}
 function acctHtml(){const t=T(),u=SYNC.user,box=x=>`<div class="detail" style="margin-bottom:12px"><h3>☁️ ${t.acctTitle}</h3>${x}</div>`;
  if(!SYNC.sb)return box(`<p class="note">${t.acctOffline}</p>`);
  if(!u)return box(`<p>${t.acctWhy}</p><input id="am" type="email" autocomplete="email" style="width:100%;padding:10px;font:inherit" placeholder="name@email.com"><button class="card" id="asend" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${t.acctSend}</button><p class="note" id="amsg"></p>`);
@@ -132,7 +154,7 @@ function head(){const t=T();document.documentElement.lang=L;document.documentEle
  document.getElementById("ac").onclick=()=>{TAB="help";tabs();help();scrollTo(0,0)};
  document.getElementById("lg").onclick=()=>setLang(L==="he"?"en":"he")}
 function home(){const t=T(),now=CROPS.filter(c=>c.months.includes(m));
- app.innerHTML=`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
+ app.innerHTML=(CC!=="IL"?`<p class="note">${t.calNote}</p>`:"")+`<h2>${t.now} (${t.months[m-1]})</h2>`+(now.length?grid(now):`<p>${t.none}</p>`)+`<h2>${t.all}</h2>`+grid(CROPS)+`<p class="draft">${t.draft}</p>`;
  app.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>show(b.dataset.id))}
 function grid(l){return `<div class="grid">`+l.map(c=>`<button class="card" data-id="${c.id}"><div class="e">${c.emoji}</div><b>${crop(c).name}</b></button>`).join("")+`</div>`}
 function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
@@ -145,7 +167,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v35";
+const VER="v36";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
