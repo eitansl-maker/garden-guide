@@ -48,6 +48,18 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   await p.fill('#lp','Rex');await p.fill('#lc','Dog');await p.selectOption('#lt','1');await p.click('#la');
   ok((await txt()).includes('Rex'),lang+': pet entry saved');
   ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('rem')||'[]').length)===rem0+1,lang+': vaccine entry added a reminder');
+  ok(await p.locator('#vs').count()===1,lang+': pets log has the send-to-vet card');
+  await p.evaluate(()=>{window.__sh=null;navigator.share=async d=>{window.__sh=d};navigator.canShare=()=>false});
+  await p.click('#vs');ok(/./.test(await p.innerText('#vo')),lang+': vet send needs name and description');
+  await p.fill('#vp','Rex');await p.fill('#vd','limping since yesterday');await p.click('#vs');await p.waitForTimeout(200);
+  const sh=await p.evaluate(()=>window.__sh);ok(sh&&/Rex/.test(sh.text)&&/limping/.test(sh.text)&&/Dog|vaccine|חיסון/.test(sh.text),lang+': vet summary includes pet, description and log');
+  ok(await p.evaluate(()=>{let u='';window.open=x=>{u=x};navigator.geolocation.getCurrentPosition=ok=>ok({coords:{latitude:32.1,longitude:34.8}});document.getElementById('vl').click();return /google\.com\/maps\/search\//.test(u)&&u.includes('32.1,34.8')}),lang+': find a vet near me opens a maps search at the location');
+  await p.fill('#rn','Dr Levi');await p.fill('#rp','+972 50-123 4567');await p.click('#vs');await p.waitForTimeout(100);
+  await p.evaluate(()=>{setDomain('plants')});await p.evaluate(()=>setDomain('pets'));await p.click('#t2');await p.click('[data-f=log]');
+  ok((await p.inputValue('#rn'))==='Dr Levi'&&(await p.inputValue('#rp'))==='972501234567',lang+': saved vet contact is remembered');
+  await p.evaluate(()=>setDomain('plants'));await p.click('#t2');await p.click('[data-f=log]');
+  ok(await p.locator('#vs').count()===1&&(await p.inputValue('#rn'))==='',lang+': plants log has its own advisor card and contact');
+  await p.evaluate(()=>setDomain('pets'));await p.click('#t2');await p.click('[data-f=log]');
   if(lang==='en')ok(!/[֐-׿]/.test((await txt()).replace(/עברית/g,'')),'en: pets log has no Hebrew');
   await p.evaluate(()=>setDomain('plants'));await p.click('#t2');await p.click('[data-f=log]');ok((await txt()).includes('Plot A')&&!(await txt()).includes('Rex'),lang+': back to plants, logs separate');
   ok(errs.length===0,lang+': no page errors '+errs.join(';'));await ctx.close()}

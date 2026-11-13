@@ -20,7 +20,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px 0;max-width:560px;marg
 </style></head><body>
 <header id="hd"></header>
 <nav id="tabs"></nav><main id="app"></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=45"></script><script src="domains.js?v=45"></script><script src="farmer.js?v=45"></script><script src="i18n.js?v=45"></script><script src="sync.js?v=45"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="crops.js?v=47"></script><script src="domains.js?v=47"></script><script src="farmer.js?v=47"></script><script src="i18n.js?v=47"></script><script src="sync.js?v=47"></script>
 <script>
 let L="he";try{L=localStorage.getItem("lang")||((navigator.language||"").startsWith("he")?"he":"en")}catch(e){}
 const app=document.getElementById("app"),m=new Date().getMonth()+1;
@@ -59,6 +59,28 @@ const dom_=x=>DOMAINS[x.dom]?x.dom:"plants";
 const tyl=x=>{const k=x.tk||(x.ti!=null?PT[x.ti]:null),e=k&&DOMAINS[dom_(x)].events.find(y=>y.k===k);return e?e[L]:x.type};
 function farm(){const f=FSx();if(DOM!=="plants"&&FT==="guides")FT="log";app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+(DOM==="plants"?["log","ask","guides"]:["log","ask"]).map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
  app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{FT=b.dataset.f;farm()});({log:flog,ask:fask,guides:fguides})[FT]()}
+// Send to the vet (pets) or the agricultural advisor (plants): a summary from the log + a description + an optional photo, handed to the share sheet (no server).
+// The recipient (name, WhatsApp number, email) is saved per area on this device, so the next send is one tap.
+const rcpKey=()=>"rcp_"+DOM,rcpGet=()=>{try{return JSON.parse(localStorage.getItem(rcpKey())||"{}")}catch(e){return{}}};
+function vetText(who,desc){const he=L==="he",pets=DOM==="pets",rows=lg().filter(x=>dom_(x)===DOM&&x.kind!=="ins"&&x.plot===who).sort((a,b)=>b.date.localeCompare(a.date)),sp=(rows[0]&&rows[0].crop)||"",seen={},key=[];
+ rows.forEach(x=>{const k=tyl(x);if(!seen[k]){seen[k]=1;key.push(k+": "+x.date+(x.product?" ("+x.product+")":""))}});
+ const rec=rows.slice(0,8).map(x=>"- "+x.date+" "+tyl(x)+(x.product?" ("+x.product+")":"")+(x.dose?" "+x.dose:"")+(x.notes?" - "+x.notes:"")).join("\n");
+ const head=pets?(he?"שלום, מצורפת פנייה לגבי "+who:"Hello, a message about "+who):(he?"שלום, מצורפת פנייה לגבי החלקה "+who:"Hello, a message about plot "+who);
+ return head+(sp?" ("+sp+")":"")+":\n\n"+(desc||"")+"\n\n"+(key.length?(he?"עדכני לפי היומן:\n":"Latest per the log:\n")+key.join("\n")+"\n\n":"")+(rec?(he?"רישומים אחרונים:\n":"Recent entries:\n")+rec+"\n\n":"")+(he?"נשלח מאפליקציית מדריך הגינה. אומדן שנכתב על ידי הבעלים, לא אבחנה.":"Sent from the Garden Guide app. Written by the owner, not a diagnosis.")}
+function vetShare(){const he=L==="he",pets=DOM==="pets",names=[...new Set(lg().filter(x=>dom_(x)===DOM).map(x=>x.plot))],inp="width:100%;padding:8px;font:inherit;margin-top:2px",r=rcpGet(),c=document.createElement("div");c.className="detail";c.style.marginTop="12px";
+ const T_=pets?(he?"שלח לווטרינר":"Send to your vet"):(he?"שלח למדריך החקלאי":"Send to your agricultural advisor"),who=pets?(he?"הווטרינר":"Vet"):(he?"מדריך חקלאי":"Advisor");
+ c.innerHTML=`<h3>${pets?"🩺":"👨‍🌾"} ${T_}</h3><label>${who}: ${he?"שם":"name"}<input id="rn" style="${inp}" value="${esc(r.name||"")}"></label><label>${he?"וואטסאפ (עם קידומת מדינה, ספרות בלבד)":"WhatsApp number (with country code, digits only)"}<input id="rp" inputmode="tel" style="${inp}" value="${esc(r.phone||"")}"></label><label>${he?"מייל":"Email"}<input id="re" type="email" style="${inp}" value="${esc(r.email||"")}"></label><label>${pets?(he?"החיה":"Pet"):(he?"חלקה":"Plot")}<input id="vp" list="vpl" style="${inp}" placeholder="${pets?(he?"שם החיה":"Pet name"):(he?"שם החלקה":"Plot name")}"></label><datalist id="vpl">${names.map(x=>`<option value="${esc(x)}">`).join("")}</datalist><label>${he?"מה קורה? (מתי התחיל, תסמינים)":"What is going on? (when it started, symptoms)"}<textarea id="vd" rows="4" style="${inp}"></textarea></label><label>${he?"תמונה (אופציונלי)":"Photo (optional)"}<input id="vf" type="file" accept="image/*" style="${inp}"></label><button class="lang" id="vs" style="margin:8px 0 0;width:100%">📤 ${he?"שתף (עם התמונה)":"Share (with the photo)"}</button><button class="lang" id="vw" style="margin:6px 0 0;width:100%">💬 ${he?"וואטסאפ לאיש הקשר (טקסט)":"WhatsApp the saved contact (text)"}</button><button class="lang" id="vm" style="margin:6px 0 0;width:100%">✉️ ${he?"מייל לאיש הקשר (טקסט)":"Email the saved contact (text)"}</button><button class="lang" id="vl" style="margin:6px 0 0;width:100%">📍 ${pets?(he?"מצא וטרינר לידי":"Find a vet near me"):(he?"מצא משתלה או מדריך חקלאי לידי":"Find a garden center or advisor near me")}</button><p class="note" id="vo"></p>${pets?`<p class="note">${DOMAINS.pets.warn[L]}</p>`:""}`;
+ fb.appendChild(c);const q=s=>c.querySelector(s),o=q("#vo");
+ const save=()=>{try{localStorage.setItem(rcpKey(),JSON.stringify({name:q("#rn").value.trim(),phone:q("#rp").value.replace(/\D/g,""),email:q("#re").value.trim()}))}catch(e){}};
+ const build=()=>{const w=q("#vp").value.trim(),d=q("#vd").value.trim();if(!w||!d){o.textContent=he?"כתוב שם ותיאור.":"Enter a name and a description.";return null}save();return vetText(w,d)};
+ q("#vs").onclick=async()=>{const text=build();if(!text)return;const f=q("#vf").files[0],data={text};if(f)data.files=[f];
+  try{if(navigator.canShare&&navigator.canShare(data)){await navigator.share(data);return}if(navigator.share&&!f){await navigator.share({text});return}}catch(e){if(e.name==="AbortError")return}
+  try{await navigator.clipboard.writeText(text);o.textContent=he?"הטקסט הועתק. הדבק בוואטסאפ או במייל"+(f?" וצרף את התמונה ידנית.":"."):"Text copied. Paste it into WhatsApp or email"+(f?" and attach the photo yourself.":".")}catch(e){prompt(he?"העתק:":"Copy:",text)}};
+ q("#vw").onclick=()=>{const text=build();if(!text)return;const ph=q("#rp").value.replace(/\D/g,"");if(!ph){o.textContent=he?"הכנס מספר וואטסאפ.":"Enter a WhatsApp number.";return}window.open("https://wa.me/"+ph+"?text="+encodeURIComponent(text),"_blank");if(q("#vf").files[0])o.textContent=he?"התמונה לא נשלחת בקישור. צרף אותה ידנית בשיחה, או השתמש בכפתור השיתוף.":"The photo cannot go through a link. Attach it in the chat, or use the Share button."};
+ q("#vl").onclick=()=>{const term=pets?(he?"וטרינר":"veterinarian"):(he?"משתלה":"garden center"),go=ll=>window.open("https://www.google.com/maps/search/"+encodeURIComponent(term)+(ll?"/@"+ll.latitude+","+ll.longitude+",14z":"+"+encodeURIComponent(cName())),"_blank");
+  if(!navigator.geolocation)return go();navigator.geolocation.getCurrentPosition(p=>go(p.coords),()=>go(),{timeout:8000,maximumAge:600000})};
+ q("#vm").onclick=()=>{const text=build();if(!text)return;const em=q("#re").value.trim();if(!em){o.textContent=he?"הכנס כתובת מייל.":"Enter an email address.";return}location.href="mailto:"+em+"?subject="+encodeURIComponent(he?"פנייה מאפליקציית מדריך הגינה":"Message from the Garden Guide app")+"&body="+encodeURIComponent(text)}}
+const flogBase=flog;flog=function(){flogBase();vetShare()};
 function fguides(){const t=T();fb.innerHTML=`<div id="kn"></div><p>${t.farmIntro}</p>`+FARM.map(g=>{const f=L==="he"?g:g.en;return `<div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`}).join("");knRender()}
 function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f0,Object.fromEntries(Object.entries(lb_).map(([k,v])=>[k,v[L]]))),EV=D.events,ALL=lg().filter(x=>dom_(x)===DOM),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
  const today=new Date().toISOString().slice(0,10);
@@ -183,7 +205,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v45";
+const VER="v47";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
