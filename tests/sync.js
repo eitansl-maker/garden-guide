@@ -42,7 +42,14 @@ function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],profiles:
  // local delete propagates
  const victim=l.find(x=>x.kind==='ins');S.markDeleted('flogdel',victim.rid);localStorage.setItem('flog',JSON.stringify(l.filter(x=>x!==victim)));
  await S.sync();ok(!c.db.events.some(e=>e.id===victim.rid),'deleted entry removed in cloud');
+ // pets entries live in a pets space; same name as a plot does not collide
+ localStorage.setItem('flog',JSON.stringify([...JSON.parse(localStorage.getItem('flog')),{kind:'done',by:'',id:9,plot:'North',crop:'Dog',date:'2026-11-12',dom:'pets',tk:'vaccine',type:'חיסון',product:'rabies',dose:'',notes:''}]));
+ await S.sync();
+ ok(c.db.spaces.filter(x=>x.name==='North').length===2&&c.db.spaces.some(x=>x.name==='North'&&x.domain==='pets'),'pets space separate from plants space with same name');
+ ok(c.db.events.some(e=>e.type==='vaccine'),'pet event type key synced');
+ c.db.events.push({id:'remote2',space_id:c.db.spaces.find(x=>x.domain==='pets').id,subject_id:null,kind:'done',type:'deworm',occurred_on:'2026-11-11',product:null,dose:null,notes:null,advisor_name:null,created_at:new Date().toISOString()});
+ await S.sync();const pl=JSON.parse(localStorage.getItem('flog')).find(x=>x.rid==='remote2');ok(pl&&pl.dom==='pets'&&pl.tk==='deworm'&&pl.plot==='North','pet event pulled with domain and type key');
  // errors surface
- c.from=()=>({select(){return this},eq(){return this},delete(){return this},then(res){return Promise.resolve({data:null,error:{message:'boom'}}).then(res)}});
+ c.from=()=>({select(){return this},eq(){return this},in(){return this},delete(){return this},then(res){return Promise.resolve({data:null,error:{message:'boom'}}).then(res)}});
  await S.sync();ok(S.err==='boom','error surfaced: '+S.err);
  process.exit(fails?1:0)})();

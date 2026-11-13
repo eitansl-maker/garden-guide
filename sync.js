@@ -2,6 +2,7 @@
 // Needs the tables from knowledge-agent/garden-app-sql/01-core.sql. The key below is the PUBLISHABLE key (safe in the browser, protected by RLS).
 (function(){
 const SB_URL="https://eoyfkteuzyqychgkzihv.supabase.co",SB_KEY="sb_publishable_u4OPUHRXvkJ_yrWtcInTeg_OFfr5IKZ";
+const DOMS=["plants","pets"];const dom=x=>DOMS.includes(x.dom)?x.dom:"plants";
 const TYPES=["spray","pest","fertilize","irrigate","prune","sow","harvest","other"];
 const HE_TYPES=["ריסוס","הדברה","דישון","השקיה","גיזום / עבודת קרקע","זריעה / שתילה","קטיף","אחר"];
 const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -47,43 +48,46 @@ async function syncLog(sb){
   const del=store.get("flogdel",[]);
   if(del.length){must(await sb.from("events").delete().in("id",del));store.set("flogdel",[])}
   // 2. spaces (one per plot name)
-  const spaces=must(await sb.from("spaces").select("id,name").eq("domain","plants"))||[];
-  const spaceId={};spaces.forEach(s=>spaceId[s.name]=s.id);
-  for(const p of new Set(log.map(x=>x.plot))){
-    if(spaceId[p])continue;
-    const r=must(await sb.from("spaces").insert({domain:"plants",name:p}).select());
-    spaceId[p]=r[0].id;
+  const spaces=must(await sb.from("spaces").select("id,name,domain").in("domain",DOMS))||[];
+  const spaceId={};spaces.forEach(s=>spaceId[s.domain+"|"+s.name]=s.id);
+  const sk=x=>dom(x)+"|"+x.plot;
+  for(const x of log){
+    if(spaceId[sk(x)])continue;
+    const r=must(await sb.from("spaces").insert({domain:dom(x),name:x.plot}).select());
+    spaceId[sk(x)]=r[0].id;
   }
   // 3. subjects (one per crop in a plot)
   const ids=Object.values(spaceId);
   const subs=ids.length?(must(await sb.from("subjects").select("id,space_id,label").in("space_id",ids))||[]):[];
   const subId={};subs.forEach(s=>subId[s.space_id+"|"+s.label]=s.id);
   for(const x of log){
-    const k=spaceId[x.plot]+"|"+x.crop;
+    const k=spaceId[sk(x)]+"|"+x.crop;
     if(!x.crop||subId[k])continue;
-    const r=must(await sb.from("subjects").insert({space_id:spaceId[x.plot],label:x.crop}).select());
+    const r=must(await sb.from("subjects").insert({space_id:spaceId[sk(x)],label:x.crop}).select());
     subId[k]=r[0].id;
   }
   // 4. push local entries
   log.forEach(x=>{if(!x.rid)x.rid=uuid()});
   if(log.length){
     must(await sb.from("events").upsert(log.map(x=>({
-      id:x.rid,space_id:spaceId[x.plot],subject_id:x.crop?subId[spaceId[x.plot]+"|"+x.crop]:null,
-      kind:x.kind==="ins"?"instruction":"done",type:TYPES[x.ti]||"other",occurred_on:x.date,
+      id:x.rid,space_id:spaceId[sk(x)],subject_id:x.crop?subId[spaceId[sk(x)]+"|"+x.crop]:null,
+      kind:x.kind==="ins"?"instruction":"done",type:x.tk||TYPES[x.ti]||"other",occurred_on:x.date,
       product:x.product||null,dose:x.dose||null,notes:x.notes||null,advisor_name:x.by||null
     }))));
   }
   // 5. pull entries added on other devices
-  const nameById={};Object.entries(spaceId).forEach(([n,i])=>nameById[i]=n);
+  const nameById={},domById={};Object.entries(spaceId).forEach(([n,i])=>{const j=n.indexOf("|");domById[i]=n.slice(0,j);nameById[i]=n.slice(j+1)});
   const labelById={};Object.entries(subId).forEach(([k,i])=>labelById[i]=k.split("|").slice(1).join("|"));
   const ev=ids.length?(must(await sb.from("events").select("id,space_id,subject_id,kind,type,occurred_on,product,dose,notes,advisor_name,created_at").in("space_id",ids))||[]):[];
   const have=new Set(log.map(x=>x.rid));let added=0;
   ev.forEach(e=>{
     if(have.has(e.id))return;
-    const ti=TYPES.indexOf(e.type),t=ti<0?7:ti;
-    log.push({kind:e.kind==="instruction"?"ins":"done",by:e.advisor_name||"",id:Date.parse(e.created_at)||Date.now(),rid:e.id,
-      plot:nameById[e.space_id]||"",crop:labelById[e.subject_id]||"",date:e.occurred_on,ti:t,type:HE_TYPES[t],
-      product:e.product||"",dose:e.dose||"",notes:e.notes||""});
+    const d=domById[e.space_id]||"plants",ti=TYPES.indexOf(e.type),t=ti<0?7:ti;
+    const en={kind:e.kind==="instruction"?"ins":"done",by:e.advisor_name||"",id:Date.parse(e.created_at)||Date.now(),rid:e.id,
+      plot:nameById[e.space_id]||"",crop:labelById[e.subject_id]||"",date:e.occurred_on,dom:d,tk:e.type,type:d==="plants"?HE_TYPES[t]:e.type,
+      product:e.product||"",dose:e.dose||"",notes:e.notes||""};
+    if(d==="plants")en.ti=t;
+    log.push(en);
     added++;
   });
   store.set("flog",log);
