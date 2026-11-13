@@ -196,7 +196,11 @@ function sowMonths(c){const C_=COUNTRIES[CC],k=C_.clim;let r;
  return C_.south?r.map(x=>(x+5)%12+1).sort((a,b)=>a-b):r}
 // Free photos: looked up at runtime from Wikipedia/Wikimedia Commons by article title, only if the file is freely licensed; creator and license are shown. Cached in localStorage. Falls back to the emoji.
 const WI={};
-async function wikiImg(titles){const L1=String(titles).split("|");for(const t of L1){const o=await wikiImg1(t);if(o)return o}return null}
+async function wikiImg(titles){const L1=String(titles).split("|");for(const t of L1){const o=await wikiImg1(t);if(o)return o}return wikiCommons(L1[0])}
+async function wikiCommons(term){const k="wc:"+term;if(WI[k]!==undefined)return WI[k];try{const c=localStorage.getItem(k);if(c){WI[k]=JSON.parse(c);return WI[k]}}catch(e){}
+ let o=null;try{const m=await(await fetch("https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=8&gsrsearch="+encodeURIComponent(term+" filetype:bitmap")+"&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=400")).json();
+  for(const p of Object.values((m.query||{}).pages||{}).sort((a,b)=>(a.index||0)-(b.index||0))){const i=p.imageinfo&&p.imageinfo[0],e=i&&i.extmetadata,lic=(e&&e.LicenseShortName&&e.LicenseShortName.value)||"";if(i&&i.thumburl&&/^(CC|Public domain|PD|GFDL|Attribution|No restrictions|Free)/i.test(lic)&&!/\.(svg|tif)/i.test(p.title)){o={src:i.thumburl,by:((e.Artist&&e.Artist.value)||"").replace(/<[^>]*>/g,"").trim().slice(0,80),lic:lic,page:i.descriptionurl||"https://commons.wikimedia.org/wiki/"+encodeURIComponent(p.title)};break}}}catch(e){}
+ WI[k]=o;try{if(o)localStorage.setItem(k,JSON.stringify(o))}catch(e){}return o}
 async function wikiImg1(title){if(WI[title]!==undefined)return WI[title];const k="wi3:"+title;try{const c=localStorage.getItem(k);if(c){WI[title]=JSON.parse(c);return WI[title]}}catch(e){}
  let o=null;try{const r=await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(title));if(r.ok){const j=await r.json(),th=j.thumbnail&&j.thumbnail.source,m0=th&&th.match(/\/thumb\/[0-9a-f]\/[0-9a-f]{2}\/([^/]+)\//);
   if(m0){const fn=decodeURIComponent(m0[1]),m=await(await fetch("https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=extmetadata&titles="+encodeURIComponent("File:"+fn))).json(),p=Object.values((m.query||{}).pages||{})[0],e=p&&p.imageinfo&&p.imageinfo[0]&&p.imageinfo[0].extmetadata;
@@ -221,7 +225,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v54";
+const VER="v55";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
