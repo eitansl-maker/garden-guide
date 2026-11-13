@@ -119,6 +119,14 @@ async function syncProfile(sb){
   if(ld===null)cd&&put("domain",cd);else if(ld!==cd)up.domains=[ld];
   if(Object.keys(up).length)must(await sb.from("profiles").update(up).eq("id",S.user.id));
   if(S.onProfile)S.onProfile({country:raw("country"),domain:raw("domain")});
+  await syncEntitlements(sb);
+}
+// Entitlements are written only by the server (payment webhook). Read-only here; a missing table or no rows leaves the local list as it is.
+async function syncEntitlements(sb){
+  try{const r=await sb.from("entitlements").select("domain,pack").eq("user_id",S.user.id);
+   if(r.error||!r.data)return;
+   localStorage.setItem("ent",JSON.stringify(r.data.map(e=>e.domain==="*"?"*":e.pack?e.domain+":"+e.pack:e.domain)));
+   if(S.onEntitlements)S.onEntitlements()}catch(e){}
 }
 S.knowledge=async function(country,domain,lang){
   const r=await S.sb.from("knowledge_items").select("topic,content,source_url,fetched_at,valid_until").eq("country",country).eq("domain",domain).eq("lang",lang);

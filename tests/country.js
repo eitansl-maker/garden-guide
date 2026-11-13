@@ -10,5 +10,9 @@ const {chromium}=require('playwright');const path=require('path');let fails=0;co
   await p.click('#t1');ok(/./.test(await p.innerText('#app'))&&(await p.innerText('#app')).length>20,lang+': home still renders');
   ok(await p.evaluate(()=>{const c=CROPS.find(x=>x.id==='tomato');CC='DK';const d=sowMonths(c).join();CC='FI';const f=sowMonths(c).join();CC='IL';return d==='4,5,6'&&f==='5,6,7'&&sowMonths(c).join()===c.months.join()}),lang+': sowing months follow climate');
   ok(await p.evaluate(()=>{setDomain('pets');home();const a=document.getElementById('app').innerText;const pr=prompt_('x');setDomain('plants');home();return /⚠/.test(a)&&a.length>40&&/vet|וטרינר/i.test(pr)&&document.querySelectorAll('#app .card').length>3}),lang+': pets domain renders from its pack and plants return');
+  ok(await p.evaluate(()=>{const A=document.getElementById('app');home();const all=document.querySelectorAll('#app .card').length;const heads=[...A.querySelectorAll('h2')].map(x=>x.innerText).join('|');return all>=CROPS.length&&packsOf('plants').length===3&&CROPS.every(c=>cropPack(c,'plants'))&&packsOf('plants').every(p=>heads.includes(p.name[L]))&&hasPack('plants','flowers')}),lang+': packs shown, default all open');
+  ok(await p.evaluate(()=>{PACKS_ENFORCE=true;localStorage.setItem('ent','["plants:flowers"]');home();const A=document.getElementById('app'),ids=[...A.querySelectorAll('[data-id]')].map(x=>x.dataset.id);const locked=/🔒/.test(A.innerText)&&!ids.includes('tomato')&&!ids.includes('pothos')&&ids.includes('marigold');
+   localStorage.setItem('ent','["plants"]');home();const all=document.querySelectorAll('#app [data-id]').length>=CROPS.length&&!/🔒/.test(document.getElementById('app').innerText);
+   localStorage.setItem('ent','[]');PACKS_ENFORCE=false;home();return locked&&all&&hasPack('pets')&&hasPack('plants','veg')}),lang+': entitlements lock/unlock by pack and domain, off by default');
   await p.close()}
  await b.close();process.exit(fails?1:0)})();
