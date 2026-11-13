@@ -1,0 +1,12 @@
+// Domain packs: the app UI is built from the active pack. Adding a domain = a new entry here (+ a row in the cloud domain_packs). Draft content, not verified by a vet.
+window.DOMAINS={
+ plants:{icon:"🌿",name:{he:"צמחים וגינה",en:"Plants & garden"}},
+ pets:{icon:"🐾",name:{he:"כלבים וחתולים",en:"Dogs & cats"},
+  tab:{he:"טיפול בחיות",en:"Pet care"},
+  warn:{he:"זה אומדן בלבד ולא תחליף לווטרינר. במצב חירום (קשיי נשימה, הרעלה, דימום, קריסה) פנה מיד לווטרינר.",en:"This is an estimate only, not a replacement for a veterinarian. In an emergency (breathing trouble, poisoning, bleeding, collapse) see a vet immediately."},
+  fields:[{k:"feed",he:"האכלה",en:"Feeding"},{k:"water",he:"מים",en:"Water"},{k:"move",he:"פעילות",en:"Activity"},{k:"vet",he:"וטרינר ומניעה",en:"Vet & prevention"},{k:"tips",he:"טיפ",en:"Tip"}],
+  items:[
+   {id:"dog",emoji:"🐕",he:{name:"כלב",feed:"פעמיים ביום, מזון מותאם גיל ומשקל. בלי שוקולד, ענבים, בצל ושום.",water:"מים טריים זמינים תמיד, במיוחד בחום.",move:"הליכה 30-120 דקות ביום לפי גזע וגיל. לא בשעות החמות בקיץ.",vet:"חיסונים ותילוע לפי לוח הווטרינר, בדיקה שנתית, טיפול נגד קרציות ופרעושים.",tips:"הרכב סגור בקיץ הוא סכנת חיים. אל תשאיר כלב ברכב."},en:{name:"Dog",feed:"Twice a day, age and weight appropriate food. No chocolate, grapes, onion or garlic.",water:"Fresh water always available, especially in heat.",move:"30-120 minutes of walking a day depending on breed and age. Avoid hot hours in summer.",vet:"Vaccines and deworming per the vet's schedule, yearly checkup, tick and flea prevention.",tips:"A closed car in summer can kill. Never leave a dog in a car."}},
+   {id:"cat",emoji:"🐈",he:{name:"חתול",feed:"פעמיים-שלוש ביום, מזון איכותי עשיר בחלבון. בלי לילי, שוקולד, בצל ושום.",water:"מים טריים, עדיף מזרקה. חתולים שותים מעט, מזון רטוב עוזר.",move:"משחק יומי, גרדן ומקום גבוה. חתול בית צריך גירוי.",vet:"חיסונים ותילוע לפי הווטרינר, עיקור/סירוס, בדיקה שנתית, מניעת פרעושים.",tips:"חתול שמפסיק לאכול יותר מיום-יומיים או מתקשה במתן שתן: לווטרינר באותו יום."},en:{name:"Cat",feed:"Two to three times a day, high-quality protein-rich food. No lilies, chocolate, onion or garlic.",water:"Fresh water, a fountain is best. Cats drink little, wet food helps.",move:"Daily play, a scratching post and a high perch. Indoor cats need stimulation.",vet:"Vaccines and deworming per the vet, spay/neuter, yearly checkup, flea prevention.",tips:"A cat that stops eating for 1-2 days or struggles to urinate needs a vet the same day."}}
+  ]}
+};
