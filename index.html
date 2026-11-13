@@ -57,7 +57,7 @@ const esc=x=>String(x||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const PT=["spray","pest","fertilize","irrigate","prune","sow","harvest","other"];
 const dom_=x=>DOMAINS[x.dom]?x.dom:"plants";
 const tyl=x=>{const k=x.tk||(x.ti!=null?PT[x.ti]:null),e=k&&DOMAINS[dom_(x)].events.find(y=>y.k===k);return e?e[L]:x.type};
-function farm(){const f=FSx();if(DOM!=="plants"&&FT==="guides")FT="log";app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+(DOM==="plants"?["log","ask","guides"]:["log","ask"]).map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
+function farm(){const f=FSx();app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+["log","ask","guides"].map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
  app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{FT=b.dataset.f;farm()});({log:flog,ask:fask,guides:fguides})[FT]()}
 // Send to the vet (pets) or the agricultural advisor (plants): a summary from the log + a description + an optional photo, handed to the share sheet (no server).
 // The recipient (name, WhatsApp number, email) is saved per area on this device, so the next send is one tap.
@@ -81,7 +81,12 @@ function vetShare(){const he=L==="he",pets=DOM==="pets",names=[...new Set(lg().f
   if(!navigator.geolocation)return go();navigator.geolocation.getCurrentPosition(p=>go(p.coords),()=>go(),{timeout:8000,maximumAge:600000})};
  q("#vm").onclick=()=>{const text=build();if(!text)return;const em=q("#re").value.trim();if(!em){o.textContent=he?"הכנס כתובת מייל.":"Enter an email address.";return}location.href="mailto:"+em+"?subject="+encodeURIComponent(he?"פנייה מאפליקציית מדריך הגינה":"Message from the Garden Guide app")+"&body="+encodeURIComponent(text)}}
 const flogBase=flog;flog=function(){flogBase();vetShare()};
-function fguides(){const t=T();fb.innerHTML=`<div id="kn"></div><p>${t.farmIntro}</p>`+FARM.map(g=>{const f=L==="he"?g:g.en;return `<div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`}).join("");knRender()}
+let GSEL=null;
+function fguides(){const t=T();if(DOM!=="plants"){fb.innerHTML=`<div id="kn"></div>`;knRender();return}
+ const g=FARM.find(x=>x.id===GSEL);
+ if(g){const f=L==="he"?g:g.en;fb.innerHTML=`<button class="back" id="gback">${t.back}</button><div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`;gback.onclick=()=>{GSEL=null;fguides()};return}
+ fb.innerHTML=`<div id="kn"></div><p>${t.farmIntro}</p><h3>${L==="he"?"בחר גידול":"Choose a crop"}</h3><div class="grid">`+FARM.map(x=>{const f=L==="he"?x:x.en;return `<button class="card" data-g="${x.id}"><div class="e">${x.emoji}</div><b>${f.title}</b></button>`}).join("")+`</div>`;
+ fb.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{GSEL=b.dataset.g;fguides()});knRender()}
 function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f0,Object.fromEntries(Object.entries(lb_).map(([k,v])=>[k,v[L]]))),EV=D.events,ALL=lg().filter(x=>dom_(x)===DOM),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
  const today=new Date().toISOString().slice(0,10);
  const last=plots.map(p=>{const e=L_.filter(x=>x.plot===p).sort((a,b)=>b.date.localeCompare(a.date));const l=e[0];const ty={};e.forEach(x=>{const k=tyl(x);if(!ty[k])ty[k]=x});return `<div class="detail" style="margin-bottom:8px"><b>${esc(p)}</b> · ${esc(l.crop)}<br><small>${f.lastT}: ${esc(tyl(l))} · ${l.date}${l.product?" ("+esc(l.product)+")":""}</small><br><small>${Object.entries(ty).map(([k,x])=>esc(k)+" "+x.date).join(" · ")}</small></div>`}).join("");
@@ -153,16 +158,16 @@ function help(){const t=T();app.innerHTML=ctryHtml()+acctHtml()+`<div class="det
 function ctryHtml(){const t=T();return `<div class="detail" style="margin-bottom:12px"><h3>🧭 ${L==="he"?"תחום":"Area"}</h3><select id="ds" style="width:100%;padding:10px;font:inherit" onchange="setDomain(this.value)">${Object.keys(DOMAINS).map(d=>`<option value="${d}"${d===DOM?" selected":""}>${DOMAINS[d].icon} ${DOMAINS[d].name[L]}</option>`).join("")}</select></div>`+`<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.ctryTitle}</h3><p class="note">${t.ctryNote}</p><select id="cs" style="width:100%;padding:10px;font:inherit">${Object.keys(COUNTRIES).map(c=>`<option value="${c}"${c===CC?" selected":""}>${COUNTRIES[c][L==="he"?"he":"en"]}</option>`).join("")}</select></div>`}
 async function knRender(){const t=T(),k=document.getElementById("kn");if(!k)return;
  const src=COUNTRIES[CC].src.map(x=>`<li><a href="${x.u}" target="_blank" rel="noopener"></a></li>`).join("");
- k.innerHTML=`<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.knTitle} (${cName()})</h3><div id="kb"></div><p class="note">${t.knSrc}</p><ul id="ks">${src}</ul></div>`;
+ k.innerHTML=`<div class="detail" style="margin-bottom:12px"><h3>🌍 ${t.knTitle} (${cName()})</h3><div id="kb"></div>${DOM==="plants"?`<p class="note">${t.knSrc}</p><ul id="ks">${src}</ul>`:""}</div>`;
  [...k.querySelectorAll("#ks a")].forEach((a,i)=>a.textContent=(L==="he"?COUNTRIES[CC].src[i].n:COUNTRIES[CC].src[i].ne||COUNTRIES[CC].src[i].n));
  const kb=document.getElementById("kb");
- let items=[];if(SYNC.sb){try{items=await SYNC.knowledge(CC,"plants",L)}catch(e){}}
+ let items=[];if(SYNC.sb){try{items=await SYNC.knowledge(CC,DOM,L)}catch(e){}}
  if(!document.getElementById("kb"))return;
  if(items.length){kb.innerHTML=items.map(i=>`<h4 class="kt"></h4><ul class="kl"></ul><p class="note ku"></p>`).join("");
   [...kb.querySelectorAll(".kt")].forEach((e,i)=>e.textContent=items[i].content.title||items[i].topic);
   [...kb.querySelectorAll(".kl")].forEach((e,i)=>(items[i].content.bullets||[]).forEach(b=>{const li=document.createElement("li");li.textContent=b;e.appendChild(li)}));
   [...kb.querySelectorAll(".ku")].forEach((e,i)=>e.textContent=t.knUpdated+" "+String(items[i].fetched_at).slice(0,10))}
- else if(SYNC.user){kb.innerHTML=`<p>${t.knNone}</p><button class="card" id="kreq" style="width:100%">${t.knAsk}</button>`;kreq.onclick=async()=>{kreq.disabled=true;kb.firstChild.textContent=t.think0;try{await SYNC.requestKnowledge(CC,"plants",L);knRender()}catch(e){kb.firstChild.textContent=t.diagErr+" "+e.message}}}
+ else if(SYNC.user){kb.innerHTML=`<p>${t.knNone}</p><button class="card" id="kreq" style="width:100%">${t.knAsk}</button>`;kreq.onclick=async()=>{kreq.disabled=true;kb.firstChild.textContent=t.think0;try{await SYNC.requestKnowledge(CC,DOM,L);knRender()}catch(e){kb.firstChild.textContent=t.diagErr+" "+e.message}}}
  else kb.innerHTML=`<p class="note">${t.knLogin}</p>`}
 function acctHtml(){const t=T(),u=SYNC.user,box=x=>`<div class="detail" style="margin-bottom:12px"><h3>☁️ ${t.acctTitle}</h3>${x}</div>`;
  if(!SYNC.sb)return box(`<p class="note">${t.acctOffline}</p>`);
@@ -205,7 +210,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  <div class="ilan">👨‍🌾 <b>${t.tip}:</b> ${c.tips}</div></div>`;
  document.getElementById("b").onclick=home;scrollTo(0,0)}
 head();SYNC.init();gated()?gate():(tabs(),diag());
-const VER="v47";
+const VER="v48";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>

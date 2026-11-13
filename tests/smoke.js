@@ -41,7 +41,7 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   await p.click('#t2');await p.click('[data-f=ask]');await p.fill('#aq','q');await p.click('#ab');await p.waitForTimeout(500);ok((await p.innerText('#ao')).includes('MOCK-ANSWER'),lang+': advisor answers');
   // pets domain: own log, event types, vaccine adds a reminder, plants log untouched
   await p.evaluate(()=>setDomain('pets'));await p.click('#t2');await p.click('[data-f=log]');
-  ok(await p.locator('[data-f=guides]').count()===0,lang+': pets farm tab has no farm guides');
+  await p.click('[data-f=guides]');ok(await p.locator('#kn').count()===1&&await p.locator('[data-g]').count()===0,lang+': pets guides tab shows local info only, no farm guides');await p.click('[data-f=log]');
   ok(await p.locator('#lt option').count()===10&&!/undefined|NaN|\[object/.test(await txt()),lang+': pets log form, 10 event types');
   ok(!(await txt()).includes('Plot A'),lang+': plants entries not shown in pets log');
   const rem0=await p.evaluate(()=>JSON.parse(localStorage.getItem('rem')||'[]').length);
