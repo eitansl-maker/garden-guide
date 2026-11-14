@@ -59,8 +59,8 @@ const esc=x=>String(x||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 const PT=["spray","pest","fertilize","irrigate","prune","sow","harvest","other"];
 const dom_=x=>DOMAINS[x.dom]?x.dom:"plants";
 const tyl=x=>{const k=x.tk||(x.ti!=null?PT[x.ti]:null),e=k&&DOMAINS[dom_(x)].events.find(y=>y.k===k);return e?e[L]:x.type};
-function farm(){const f=FSx();app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+["log","ask","guides"].map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
- app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{FT=b.dataset.f;farm()});({log:flog,ask:fask,guides:fguides})[FT]()}
+function farm(){const f=FSx();app.innerHTML=`<div style="display:flex;gap:6px;margin-bottom:10px">`+(DOM==="aquarium"?["log","calc","ask","guides"]:["log","ask","guides"]).map(x=>`<button class="card" data-f="${x}" style="flex:1;padding:8px;font-size:14px;${FT==x?"background:var(--g);color:#fff":""}">${x==="calc"?(L==="he"?"מחשבונים":"Calculators"):f[x]}</button>`).join("")+`</div><div id="fb"></div>`;
+ app.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{FT=b.dataset.f;farm()});({log:flog,ask:fask,guides:fguides,calc:fcalc})[FT]()}
 // Send to the vet (pets) or the agricultural advisor (plants): a summary from the log + a description + an optional photo, handed to the share sheet (no server).
 // The recipient (name, WhatsApp number, email) is saved per area on this device, so the next send is one tap.
 const rclKey=()=>"rcl_"+DOM,rclGet=()=>{try{const a=JSON.parse(localStorage.getItem(rclKey())||"[]");return Array.isArray(a)?a:[]}catch(e){return[]}},rclPut=c=>{try{const a=rclGet().filter(x=>(x.name||x.phone||x.email)!==(c.name||c.phone||c.email));if(c.name||c.phone||c.email)a.unshift(c);localStorage.setItem(rclKey(),JSON.stringify(a.slice(0,30)))}catch(e){}},rcpKey=()=>"rcp_"+DOM,rcpGet=()=>{try{return JSON.parse(localStorage.getItem(rcpKey())||"{}")}catch(e){return{}}};
@@ -91,6 +91,32 @@ function fguides(){const t=T();if(DOM!=="plants"){fb.innerHTML=`<div id="kn"></d
  if(g){const f=L==="he"?g:g.en;fb.innerHTML=`<button class="back" id="gback">${t.back}</button><div class="detail farm" style="margin-bottom:12px"><h3>${g.emoji} ${f.title}</h3><p class="note">${f.note}</p>`+f.sections.map(s=>`<h4>${s.h}</h4><ul>${s.l.map(x=>`<li>${x}</li>`).join("")}</ul>`).join("")+`<p>${t.source}: <a href="${g.src.url}" target="_blank" rel="noopener">${f.srcName||g.src.name}</a></p></div>`;gback.onclick=()=>{GSEL=null;fguides()};return}
  fb.innerHTML=`<p>${t.farmIntro}</p><h3>${L==="he"?"בחר גידול":"Choose a crop"}</h3><div class="grid">`+FARM.map(x=>{const f=L==="he"?x:x.en;return `<button class="card" data-g="${x.id}"><div class="e">${x.emoji}</div><b>${f.title}</b></button>`}).join("")+`</div><div id="kn" style="margin-top:12px"></div>`;
  fb.querySelectorAll("[data-g]").forEach(b=>b.onclick=()=>{GSEL=b.dataset.g;fguides()});knRender()}
+
+// Aquarium calculators (v71): net volume, water change from nitrate/ammonia. Estimates only; no medication doses (follow the product label).
+function fcalc(){const q=x=>document.querySelector(x),he=L==="he",inp="width:100%;padding:8px;font:inherit;margin-top:2px",n=id=>parseFloat((q("#"+id).value||"").replace(",","."));
+ fb.innerHTML=`<div class="detail"><h3>${he?"נפח נטו של האקווריום":"Net tank volume"}</h3>
+ <label>${he?"אורך (ס\"מ)":"Length (cm)"}<input id="cl" type="number" inputmode="decimal" style="${inp}"></label>
+ <label>${he?"רוחב (ס\"מ)":"Width (cm)"}<input id="cw" type="number" inputmode="decimal" style="${inp}"></label>
+ <label>${he?"גובה מים (ס\"מ)":"Water height (cm)"}<input id="ch" type="number" inputmode="decimal" style="${inp}"></label>
+ <label>${he?"חצץ וקישוטים (% מהנפח, בדרך כלל 10 עד 20)":"Gravel and decor (% of volume, usually 10 to 20)"}<input id="cd" type="number" inputmode="decimal" value="15" style="${inp}"></label>
+ <p id="cv" class="ilan"></p></div>
+ <div class="detail" style="margin-top:10px"><h3>${he?"כמה מים להחליף":"How much water to change"}</h3>
+ <label>${he?"נפח נטו (ליטר)":"Net volume (liters)"}<input id="cn" type="number" inputmode="decimal" style="${inp}"></label>
+ <label>${he?"ניטראט עכשיו (ppm)":"Nitrate now (ppm)"}<input id="cno" type="number" inputmode="decimal" style="${inp}"></label>
+ <label>${he?"ניטראט רצוי (ppm, בדרך כלל עד 20 עד 40)":"Target nitrate (ppm, usually 20 to 40)"}<input id="ct" type="number" inputmode="decimal" value="20" style="${inp}"></label>
+ <label>${he?"אמוניה כללית (ppm, אם נמדדה)":"Total ammonia (ppm, if measured)"}<input id="ca" type="number" inputmode="decimal" style="${inp}"></label>
+ <label>${he?"ניטריט (ppm, אם נמדד)":"Nitrite (ppm, if measured)"}<input id="cni" type="number" inputmode="decimal" style="${inp}"></label>
+ <button class="card" id="cb" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${he?"חשב":"Calculate"}</button><p id="co" class="ilan" style="white-space:pre-wrap"></p>
+ <p class="note">${he?"אומדן כללי בלבד, לא מחליף חנות דגים או מומחה. לא נותנים כאן מינוני תרופות: פועלים לפי התווית של היצרן. מים חדשים חייבים להיות מטופלים בנטרול כלור ובטמפרטורה דומה.":"General estimate only; it does not replace an aquarium store or expert. No medication doses here: follow the manufacturer's label. New water must be dechlorinated and at a similar temperature."}</p></div>`;
+ const upd=()=>{const l=n("cl"),w=n("cw"),h=n("ch"),d=isNaN(n("cd"))?0:n("cd");if(l>0&&w>0&&h>0){const g=l*w*h/1000,net=g*(1-d/100);cv.textContent=(he?"נפח מים ברוטו ":"Gross ")+g.toFixed(0)+" L · "+(he?"נטו ":"net ")+net.toFixed(0)+" L";cn.value=net.toFixed(0)}else cv.textContent=""};
+ ["cl","cw","ch","cd"].forEach(i=>q("#"+i).oninput=upd);
+ cb.onclick=()=>{const v=n("cn"),no=n("cno"),t=n("ct"),a=n("ca"),ni=n("cni"),o=[];if(!(v>0)){co.textContent=he?"הכנס נפח נטו.":"Enter the net volume.";return}
+  let pct=0;if(no>0&&t>=0&&no>t){pct=Math.min(50,Math.round((1-t/no)*100));o.push((he?"ניטראט: ":"Nitrate: ")+no+" -> "+t+" ppm = "+(he?"החלפה של כ-":"change about ")+pct+"%"+((1-t/no)*100>50?(he?" (מוגבל ל-50% בבת אחת, חזור על כך אחרי 24 שעות)":" (capped at 50% at once; repeat after 24 h)"):""))}
+  else if(no>0)o.push(he?"הניטראט ברמה הרצויה: אין צורך להחליף בגללו. החלפה שגרתית 10 עד 25% בשבוע.":"Nitrate is at target: no change needed for it. Routine 10 to 25% weekly.");
+  if(a>=0.25||ni>=0.25){pct=Math.max(pct,a>=2||ni>=2?50:30);o.push(he?"אמוניה או ניטריט מעל 0.25 ppm מסוכנים לדגים: החלף מיד כ-"+pct+"% מים מטופלים, בדוק שוב אחרי כמה שעות, האכל מעט או כלל לא, ובדוק שהסינון עובד. אם הדגים מתנשמים, פנה לחנות דגים.":"Ammonia or nitrite above 0.25 ppm is dangerous: change about "+pct+"% treated water now, retest in a few hours, feed little or not at all, and check the filter. If fish gasp, contact an aquarium store.")}
+  else if(a>0||ni>0)o.push(he?"אמוניה או ניטריט נמוכים אך לא אפס באקווריום ותיק: בדוק מחזור וסינון.":"Low but non-zero ammonia or nitrite in an established tank: check cycling and the filter.");
+  if(pct>0)o.push((he?"כמות להחלפה: ":"Amount to change: ")+(v*pct/100).toFixed(1)+" L");
+  if(!o.length)o.push(he?"הכנס ערכי מים כדי לקבל המלצה.":"Enter water values to get a recommendation.");co.textContent=o.join("\n\n")}}
 function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f0,Object.fromEntries(Object.entries(lb_).map(([k,v])=>[k,v[L]]))),EV=D.events,ALL=lg().filter(x=>dom_(x)===DOM),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
  const today=new Date().toISOString().slice(0,10);
  const last=plots.map(p=>{const e=L_.filter(x=>x.plot===p).sort((a,b)=>b.date.localeCompare(a.date));const l=e[0];const ty={};e.forEach(x=>{const k=tyl(x);if(!ty[k])ty[k]=x});return `<div class="detail" style="margin-bottom:8px"><b>${esc(p)}</b> · ${esc(l.crop)}<br><small>${f.lastT}: ${esc(tyl(l))} · ${l.date}${l.product?" ("+esc(l.product)+")":""}</small><br><small>${Object.entries(ty).map(([k,x])=>esc(k)+" "+x.date).join(" · ")}</small></div>`}).join("");
@@ -99,6 +125,7 @@ function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f
  <label id="lbw" style="display:none">${f.by}<input id="lb" style="${inp}"></label>
  <label>${f.plot}<input id="lp" list="pl" style="${inp}" placeholder="${f.plotPh}"></label><datalist id="pl">${plots.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
  <label>${f.crop}<input id="lc" style="${inp}" placeholder="${f.cropPh}"></label>
+ ${DOM==="aquarium"?`<label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="li"> ${L==="he"?"בטנק יש שרימפס, חלזונות או חסרי חוליות אחרים":"This tank has shrimp, snails or other invertebrates"}</label>`:""}
  <label id="ldl"><span id="ldt">${f.date}</span><input id="ld" type="date" value="${today}" style="${inp}"></label>
  <label>${f.type}<select id="lt" style="${inp}">${EV.map((x,i)=>`<option value="${i}">${x[L]}</option>`).join("")}</select></label>
  <label>${f.prod}<input id="lm" style="${inp}"></label>
@@ -109,10 +136,13 @@ function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f
  ${DOM==="plants"?`<h3>${f.status}</h3>${last||"<p>"+f.none+"</p>"}`:(L_.length?"":"<p>"+f.none+"</p>")}
  <h3>${f.hist}</h3>`+[...L_].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(x=>`<div class="detail" style="margin-bottom:8px"><b>${x.date}</b> · ${esc(x.plot)} · ${esc(x.crop)}<br>${esc(tyl(x))}${x.product?": "+esc(x.product):""}${x.dose?" · "+esc(x.dose):""}${x.by?"<br><small>"+f.instr+": "+esc(x.by)+"</small>":""}${x.notes?"<br><small>"+esc(x.notes)+"</small>":""}<br><button class="back" data-d="${x.id}">${f.del}</button></div>`).join("")+(L_.length?`<button class="card" id="lx" style="width:100%">${f.export}</button>`:"")+`<p class="note">${f.local}</p>`;
  const fillC=()=>{const v=lp.value.trim(),m=L_.filter(x=>x.plot===v).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id)[0];if(m&&(!lc.value.trim()||lc.dataset.auto==="1")){lc.value=m.crop;lc.dataset.auto="1"}};
- lp.oninput=lp.onchange=fillC;lc.oninput=()=>{lc.dataset.auto="0"};if(plots.length===1){lp.value=plots[0];fillC()}
+ const TI=()=>{try{return JSON.parse(localStorage.getItem("tankInv")||"{}")}catch(x){return{}}},fillI=()=>{if(window.li)li.checked=!!TI()[lp.value.trim()]};const CU=/copper|cupr|cuso4|cuprazin|נחושת|קופר|kupfer|kobber|kupari|cobre|miedź|miedz/i;
+ lp.oninput=lp.onchange=()=>{fillC();fillI()};lc.oninput=()=>{lc.dataset.auto="0"};if(plots.length===1){lp.value=plots[0];fillC()}
  lk.onchange=()=>{lbw.style.display=lk.value==="ins"?"block":"none";ldt.textContent=lk.value==="ins"?f.dueDate:f.date;la.textContent=lk.value==="ins"?f.saveIns:(f.saveT||f.save)};
  fb.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>{const a=lg(),x=a.find(y=>y.id==b.dataset.ok);if(x){x.kind="done";x.date=today;x.notes=(x.notes?x.notes+" · ":"")+f.doneNote;sv(a);flog()}});
- la.onclick=()=>{if(!lp.value.trim()||!lc.value.trim()){alert(f.need);return}const a=lg(),ev=EV[+lt.value],e={kind:lk.value,by:lb.value.trim(),id:Date.now(),plot:lp.value.trim(),crop:lc.value.trim(),date:ld.value,dom:DOM,tk:ev.k,type:ev.he,product:lm.value.trim(),dose:ls.value.trim(),notes:ln.value.trim()};if(DOM==="plants")e.ti=+lt.value;a.push(e);sv(a);
+ la.onclick=()=>{if(!lp.value.trim()||!lc.value.trim()){alert(f.need);return}
+  if(DOM==="aquarium"&&window.li){const m=TI();m[lp.value.trim()]=li.checked;try{localStorage.setItem("tankInv",JSON.stringify(m))}catch(x){}
+   if(li.checked&&CU.test(lm.value+" "+ln.value)){alert(L==="he"?"עצור: תרופה עם נחושת הורגת שרימפס וחלזונות תוך שעות. הרישום לא נשמר. פנה לחנות דגים או למומחה לתרופה חלופית.":"Stop: copper-based medication kills shrimp and snails within hours. The entry was not saved. Ask an aquarium store or expert for an alternative.");return}}const a=lg(),ev=EV[+lt.value],e={kind:lk.value,by:lb.value.trim(),id:Date.now(),plot:lp.value.trim(),crop:lc.value.trim(),date:ld.value,dom:DOM,tk:ev.k,type:ev.he,product:lm.value.trim(),dose:ls.value.trim(),notes:ln.value.trim()};if(DOM==="plants")e.ti=+lt.value;a.push(e);sv(a);
   let added=false;if(ev.rep&&e.kind==="done"&&e.date){const r=rg(),d=new Date(e.date+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+ev.rep);r.push({id:Date.now()+1,d:d.toISOString().slice(0,10),t:ev[L]+" · "+e.plot});try{localStorage.setItem("rem",JSON.stringify(r))}catch(x){}SYNC.touch();added=true}
   flog();if(added&&window.lrn)lrn.textContent="⏰ "+f.remNote};
  fb.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{if(confirm(f.confirm)){const g=lg().find(x=>x.id==b.dataset.d);if(g)SYNC.markDeleted("flogdel",g.rid);sv(lg().filter(x=>x.id!=b.dataset.d));flog()}});
@@ -246,7 +276,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  document.getElementById("b").onclick=home;scrollTo(0,0);
  if(c.wiki){const h=document.createElement("div");h.id="pimg";app.querySelector(".detail h3").after(h);wikiImg(c.wiki).then(o=>{if(!o||!h.isConnected)return;const im=document.createElement("img");im.alt=c.name;im.src=o.src;im.style.cssText="width:100%;max-height:240px;object-fit:cover;border-radius:12px";im.onload=()=>{h.appendChild(im);const n=document.createElement("p");n.className="note";n.style.cssText="font-size:10px;opacity:.6;margin:2px 0 8px";const l=document.createElement("a");l.href=o.page;l.target="_blank";l.rel="noopener";l.textContent="📷 "+(o.by||"Wikimedia Commons")+" · "+o.lic;n.appendChild(l);h.appendChild(n)}})}}
 head();SYNC.init();SPECIES.load();gated()?gate():(tabs(),diag());
-const VER="v69";
+const VER="v71";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
