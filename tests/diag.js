@@ -16,8 +16,9 @@ for(const dom of ['plants','pets','aquarium','text']){
  await p.addInitScript(()=>{try{localStorage.setItem('gkey','AIzaTEST')}catch(e){}});
  await p.goto(URL);await p.waitForTimeout(800);
  await p.evaluate(d=>{setDomain(d==='text'?'plants':d);TAB="diag";tabs();diag()},dom);
+ if(dom==='plants'){ok(!(await p.isVisible('#ai')),'diagnose button is hidden before a photo is taken');ok((await p.evaluate(()=>getComputedStyle(document.getElementById('pl')).fontWeight))>=700,'photo button is bold and prominent')}
  await p.setInputFiles('#ph',{name:'a.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')});
- await p.click('#ai');await p.waitForTimeout(1500);
+ if(dom==='plants')ok(await p.isVisible('#ai'),'diagnose button appears after a photo is taken');await p.click('#ai');await p.waitForTimeout(1500);
  const t=await p.innerText('#out');const props=Object.keys(((sent||{}).generationConfig||{}).responseSchema?.properties||{});
  ok(props.length>0,dom+': request asks for a JSON schema');
  if(dom==='text')ok(t.trim()==='plain text answer','text: non-JSON answer falls back to plain text');
