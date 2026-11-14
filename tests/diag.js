@@ -20,7 +20,7 @@ for(const dom of ['plants','pets','aquarium','text']){
  await p.setInputFiles('#ph',{name:'a.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==','base64')});
  await p.waitForTimeout(2000);
  const t=await p.innerText('#out');const props=Object.keys(((sent||{}).generationConfig||{}).responseSchema?.properties||{});
- ok(props.length>0,dom+': taking a photo sends it to diagnosis by itself');if(dom==='plants')ok(await p.isVisible('#ai'),'a diagnose-again button is available after the result');
+ ok(props.length>0,dom+': taking a photo sends it to diagnosis by itself');if(dom==='plants')ok(!(await p.isVisible('#ai')),'no diagnose button after a successful result');
  if(dom==='text')ok(t.trim()==='plain text answer','text: non-JSON answer falls back to plain text');
  else{EXPECT[dom].forEach(x=>ok(t.includes(x),dom+': card shows "'+x+'"'));ok(!/\{|"what"/.test(t),dom+': no raw JSON on screen');
   const extra={plants:'prevent',pets:'red_flags',aquarium:'tests'}[dom];ok(props.includes(extra),dom+': schema has the domain field '+extra)}

@@ -32,7 +32,7 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   // key + speed test
   await p.click('#t4');await p.fill('#key','AIzaTEST');await p.click('#sk');await p.click('#st');await p.waitForTimeout(700);ok(!/❌/.test(await p.innerText('#so')),lang+': speed test passes (mock)');
   // diagnosis (with overload on 3.5-flash -> others win)
-  mode='overload';await p.click('#t3');await p.setInputFiles('#ph',path.resolve(__dirname,'..','icon-192.png'));await p.click('#ai');await p.waitForTimeout(800);
+  mode='overload';await p.click('#t3');await p.setInputFiles('#ph',path.resolve(__dirname,'..','icon-192.png'));await p.waitForTimeout(1500);
   ok((await p.innerText('#out')).includes('MOCK-ANSWER'),lang+': diagnosis returns despite one model overloaded');
   await p.fill('#fq','follow');await p.click('#fs');await p.waitForTimeout(800);ok((await p.innerText('#fl')).includes('MOCK-ANSWER'),lang+': follow-up chat answers');
   await p.fill('#fq','f2');await p.click('#fs');await p.waitForTimeout(600);await p.fill('#fq','f3');await p.click('#fs');await p.waitForTimeout(600);ok(await p.locator('#fl > .detail').count()===1&&await p.locator('#oh').count()===1,lang+': older chat folded');
