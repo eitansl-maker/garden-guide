@@ -99,6 +99,7 @@ function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f
  <label id="lbw" style="display:none">${f.by}<input id="lb" style="${inp}"></label>
  <label>${f.plot}<input id="lp" list="pl" style="${inp}" placeholder="${f.plotPh}"></label><datalist id="pl">${plots.map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
  <label>${f.crop}<input id="lc" style="${inp}" placeholder="${f.cropPh}"></label>
+ ${DOM==="aquarium"?`<label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="li"> ${L==="he"?"בטנק יש שרימפס, חלזונות או חסרי חוליות אחרים":"This tank has shrimp, snails or other invertebrates"}</label>`:""}
  <label id="ldl"><span id="ldt">${f.date}</span><input id="ld" type="date" value="${today}" style="${inp}"></label>
  <label>${f.type}<select id="lt" style="${inp}">${EV.map((x,i)=>`<option value="${i}">${x[L]}</option>`).join("")}</select></label>
  <label>${f.prod}<input id="lm" style="${inp}"></label>
@@ -109,10 +110,13 @@ function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f
  ${DOM==="plants"?`<h3>${f.status}</h3>${last||"<p>"+f.none+"</p>"}`:(L_.length?"":"<p>"+f.none+"</p>")}
  <h3>${f.hist}</h3>`+[...L_].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id).map(x=>`<div class="detail" style="margin-bottom:8px"><b>${x.date}</b> · ${esc(x.plot)} · ${esc(x.crop)}<br>${esc(tyl(x))}${x.product?": "+esc(x.product):""}${x.dose?" · "+esc(x.dose):""}${x.by?"<br><small>"+f.instr+": "+esc(x.by)+"</small>":""}${x.notes?"<br><small>"+esc(x.notes)+"</small>":""}<br><button class="back" data-d="${x.id}">${f.del}</button></div>`).join("")+(L_.length?`<button class="card" id="lx" style="width:100%">${f.export}</button>`:"")+`<p class="note">${f.local}</p>`;
  const fillC=()=>{const v=lp.value.trim(),m=L_.filter(x=>x.plot===v).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id)[0];if(m&&(!lc.value.trim()||lc.dataset.auto==="1")){lc.value=m.crop;lc.dataset.auto="1"}};
- lp.oninput=lp.onchange=fillC;lc.oninput=()=>{lc.dataset.auto="0"};if(plots.length===1){lp.value=plots[0];fillC()}
+ const TI=()=>{try{return JSON.parse(localStorage.getItem("tankInv")||"{}")}catch(x){return{}}},fillI=()=>{if(window.li)li.checked=!!TI()[lp.value.trim()]};const CU=/copper|cupr|cuso4|cuprazin|נחושת|קופר|kupfer|kobber|kupari|cobre|miedź|miedz/i;
+ lp.oninput=lp.onchange=()=>{fillC();fillI()};lc.oninput=()=>{lc.dataset.auto="0"};if(plots.length===1){lp.value=plots[0];fillC()}
  lk.onchange=()=>{lbw.style.display=lk.value==="ins"?"block":"none";ldt.textContent=lk.value==="ins"?f.dueDate:f.date;la.textContent=lk.value==="ins"?f.saveIns:(f.saveT||f.save)};
  fb.querySelectorAll("[data-ok]").forEach(b=>b.onclick=()=>{const a=lg(),x=a.find(y=>y.id==b.dataset.ok);if(x){x.kind="done";x.date=today;x.notes=(x.notes?x.notes+" · ":"")+f.doneNote;sv(a);flog()}});
- la.onclick=()=>{if(!lp.value.trim()||!lc.value.trim()){alert(f.need);return}const a=lg(),ev=EV[+lt.value],e={kind:lk.value,by:lb.value.trim(),id:Date.now(),plot:lp.value.trim(),crop:lc.value.trim(),date:ld.value,dom:DOM,tk:ev.k,type:ev.he,product:lm.value.trim(),dose:ls.value.trim(),notes:ln.value.trim()};if(DOM==="plants")e.ti=+lt.value;a.push(e);sv(a);
+ la.onclick=()=>{if(!lp.value.trim()||!lc.value.trim()){alert(f.need);return}
+  if(DOM==="aquarium"&&window.li){const m=TI();m[lp.value.trim()]=li.checked;try{localStorage.setItem("tankInv",JSON.stringify(m))}catch(x){}
+   if(li.checked&&CU.test(lm.value+" "+ln.value)){alert(L==="he"?"עצור: תרופה עם נחושת הורגת שרימפס וחלזונות תוך שעות. הרישום לא נשמר. פנה לחנות דגים או למומחה לתרופה חלופית.":"Stop: copper-based medication kills shrimp and snails within hours. The entry was not saved. Ask an aquarium store or expert for an alternative.");return}}const a=lg(),ev=EV[+lt.value],e={kind:lk.value,by:lb.value.trim(),id:Date.now(),plot:lp.value.trim(),crop:lc.value.trim(),date:ld.value,dom:DOM,tk:ev.k,type:ev.he,product:lm.value.trim(),dose:ls.value.trim(),notes:ln.value.trim()};if(DOM==="plants")e.ti=+lt.value;a.push(e);sv(a);
   let added=false;if(ev.rep&&e.kind==="done"&&e.date){const r=rg(),d=new Date(e.date+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+ev.rep);r.push({id:Date.now()+1,d:d.toISOString().slice(0,10),t:ev[L]+" · "+e.plot});try{localStorage.setItem("rem",JSON.stringify(r))}catch(x){}SYNC.touch();added=true}
   flog();if(added&&window.lrn)lrn.textContent="⏰ "+f.remNote};
  fb.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{if(confirm(f.confirm)){const g=lg().find(x=>x.id==b.dataset.d);if(g)SYNC.markDeleted("flogdel",g.rid);sv(lg().filter(x=>x.id!=b.dataset.d));flog()}});
@@ -246,7 +250,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  document.getElementById("b").onclick=home;scrollTo(0,0);
  if(c.wiki){const h=document.createElement("div");h.id="pimg";app.querySelector(".detail h3").after(h);wikiImg(c.wiki).then(o=>{if(!o||!h.isConnected)return;const im=document.createElement("img");im.alt=c.name;im.src=o.src;im.style.cssText="width:100%;max-height:240px;object-fit:cover;border-radius:12px";im.onload=()=>{h.appendChild(im);const n=document.createElement("p");n.className="note";n.style.cssText="font-size:10px;opacity:.6;margin:2px 0 8px";const l=document.createElement("a");l.href=o.page;l.target="_blank";l.rel="noopener";l.textContent="📷 "+(o.by||"Wikimedia Commons")+" · "+o.lic;n.appendChild(l);h.appendChild(n)}})}}
 head();SYNC.init();SPECIES.load();gated()?gate():(tabs(),diag());
-const VER="v69";
+const VER="v70";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
