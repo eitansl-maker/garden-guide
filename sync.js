@@ -40,7 +40,7 @@ S.sync=async function(){
   if(!S.sb||!S.user||S.busy)return;S.busy=true;S.err="";
   try{
     const sb=S.sb;
-    await syncProfile(sb);await syncLog(sb);await syncReminders(sb);
+    await syncProfile(sb);await syncLog(sb);await syncReminders(sb);await syncReadings(sb);
     S.last=Date.now();
   }catch(e){S.err=(e&&e.message)||String(e)}
   S.busy=false;if(S.onChange)S.onChange();
@@ -98,6 +98,31 @@ async function syncLog(sb){
   });
   store.set("flog",log);
   return added;
+}
+
+// Aquarium water readings (local "wlog", per tank) <-> public.measurements (one row per metric). Best effort: a failure here never fails the rest of the sync.
+const RM=[["no","nitrate","ppm"],["a","ammonia","ppm"],["ni","nitrite","ppm"],["ph","ph",null],["T","temp","C"]];
+async function syncReadings(sb){
+  try{
+    const w=store.get("wlog",{}),tanks=Object.keys(w);
+    const spaces=must(await sb.from("spaces").select("id,name,domain").eq("domain","aquarium"))||[];
+    const sid={};spaces.forEach(x=>sid[x.name]=x.id);
+    for(const t of tanks){if(!sid[t]&&w[t].length){const r=must(await sb.from("spaces").insert({domain:"aquarium",name:t}).select());sid[t]=r[0].id}}
+    const rows=[];
+    tanks.forEach(t=>w[t].forEach(r=>{r.rids=r.rids||{};RM.forEach(([k,m,u])=>{if(r[k]!=null&&!isNaN(r[k])){r.rids[k]=r.rids[k]||uuid();rows.push({id:r.rids[k],space_id:sid[t],metric:m,value:r[k],unit:u,measured_at:r.d+"T12:00:00Z"})}})}));
+    if(rows.length)must(await sb.from("measurements").upsert(rows));
+    store.set("wlog",w);
+    // pull readings added on another device
+    const ids=Object.values(sid);if(!ids.length)return;
+    const nameById={};Object.entries(sid).forEach(([n,i])=>nameById[i]=n);
+    const remote=must(await sb.from("measurements").select("id,space_id,metric,value,measured_at").in("space_id",ids))||[];
+    const have=new Set();Object.values(w).forEach(a=>a.forEach(r=>Object.values(r.rids||{}).forEach(i=>have.add(i))));
+    const key={};let added=0;
+    remote.forEach(m=>{if(have.has(m.id))return;const rm=RM.find(x=>x[1]===m.metric);if(!rm)return;const t=nameById[m.space_id],d=String(m.measured_at).slice(0,10),kk=t+"|"+d;
+      let r=key[kk];if(!r){r=key[kk]={d,no:null,a:null,ni:null,ph:null,T:null,rids:{}};(w[t]=w[t]||[]).push(r)}
+      r[rm[0]]=Number(m.value);r.rids[rm[0]]=m.id;added++});
+    if(added){Object.keys(w).forEach(t=>w[t].sort((x,y)=>x.d.localeCompare(y.d)));store.set("wlog",w)}
+  }catch(e){}
 }
 
 async function syncReminders(sb){
