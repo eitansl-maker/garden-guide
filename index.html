@@ -103,19 +103,24 @@ function fcalc(){const q=x=>document.querySelector(x),he=L==="he",inp="width:100
  ${fld("tnm","שם האקווריום","Tank name")}${fld("cl","אורך (ס\"מ)","Length (cm)")}${fld("cw","רוחב (ס\"מ)","Width (cm)")}${fld("ch","גובה מים (ס\"מ)","Water height (cm)")}${fld("cd","חצץ וקישוטים (% מהנפח, בדרך כלל 10 עד 20)","Gravel and decor (% of volume, usually 10 to 20)",15)}
  <p id="cv" class="ilan"></p>
  ${fld("tt","טמפרטורה (C)","Temperature (C)",25)}${fld("tph","pH","pH",7)}${fld("tap","ניטראט במי הברז (ppm, 0 אם לא ידוע)","Nitrate in tap water (ppm, 0 if unknown)",0)}
+ <label>${lb("תאריך הקמת האקווריום (למעקב מחזור)","Tank start date (for cycle tracking)")}<input id="tsd" type="date" style="${inp}"></label>
  <label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="tin"> ${lb("יש שרימפס, חלזונות או חסרי חוליות","Has shrimp, snails or invertebrates")}</label>
  <button class="card" id="tsv" style="width:100%;margin-top:8px">${lb("שמור פרופיל","Save profile")}</button> <button class="back" id="tdl">${lb("מחק פרופיל","Delete profile")}</button></div>
  <div class="detail" style="margin-top:10px"><h3>${lb("מדידות וכמה מים להחליף","Readings and water change")}</h3>
  ${fld("cno","ניטראט עכשיו (ppm)","Nitrate now (ppm)")}${fld("ct","ניטראט רצוי (ppm, בדרך כלל עד 20 עד 40)","Target nitrate (ppm, usually 20 to 40)",20)}
  ${fld("ca","אמוניה כללית (ppm, מה שהערכה מראה)","Total ammonia (ppm, as the kit shows)")}${fld("cni","ניטריט (ppm)","Nitrite (ppm)")}
  <button class="card" id="cb" style="width:100%;margin-top:8px;background:var(--g);color:#fff">${lb("חשב","Calculate")}</button><p id="co" class="ilan" style="white-space:pre-wrap"></p>
- <p class="note">${lb("אומדן כללי בלבד, לא מחליף חנות דגים או מומחה. אין כאן מינוני תרופות: פועלים לפי התווית של היצרן. מים חדשים חייבים להיות מטופלים בנטרול כלור ובטמפרטורה דומה. מגבלת 50% להחלפה בבת אחת היא הערכה זהירה, כדאי לאמת מול החנות שלך.","General estimate only; it does not replace an aquarium store or expert. No medication doses here: follow the manufacturer's label. New water must be dechlorinated and at a similar temperature. The 50% single-change cap is a cautious estimate; confirm with your store.")}</p></div>`;
+ <p class="note">${lb("אומדן כללי בלבד, לא מחליף חנות דגים או מומחה. אין כאן מינוני תרופות: פועלים לפי התווית של היצרן. מים חדשים חייבים להיות מטופלים בנטרול כלור ובטמפרטורה דומה. מגבלת 50% להחלפה בבת אחת היא הערכה זהירה, כדאי לאמת מול החנות שלך.","General estimate only; it does not replace an aquarium store or expert. No medication doses here: follow the manufacturer's label. New water must be dechlorinated and at a similar temperature. The 50% single-change cap is a cautious estimate; confirm with your store.")}</p></div>
+ <div class="detail" style="margin-top:10px"><h3>${lb("יומן מדידות ומחזור","Readings log and cycle")}</h3>
+ <div id="cyc" class="ilan" style="white-space:pre-wrap"></div>
+ <button class="card" id="wsv" style="width:100%;margin-top:8px">${lb("שמור את המדידות האלה ביומן","Save these readings to the log")}</button><p id="wmsg" class="note"></p>
+ <div id="wch"></div><div id="wls"></div></div>`;
  const net=()=>{const l=n("cl"),w=n("cw"),h=n("ch"),d=isNaN(n("cd"))?0:n("cd");return l>0&&w>0&&h>0?l*w*h/1000*(1-d/100):0};
  const upd=()=>{const v=net();cv.textContent=v?lb("נפח נטו ","Net volume ")+v.toFixed(0)+" L":""};
  ["cl","cw","ch","cd"].forEach(i=>q("#"+i).oninput=upd);
- const load=()=>{const t=TK()[tsel.value];if(!t)return;tnm.value=tsel.value;cl.value=t.l||"";cw.value=t.w||"";ch.value=t.h||"";cd.value=t.d??15;tt.value=t.t??25;tph.value=t.ph??7;tap.value=t.tap??0;tin.checked=!!INV()[tsel.value];upd()};
+ const load=()=>{const t=TK()[tsel.value];if(!t)return;tnm.value=tsel.value;cl.value=t.l||"";cw.value=t.w||"";ch.value=t.h||"";cd.value=t.d??15;tt.value=t.t??25;tph.value=t.ph??7;tap.value=t.tap??0;tin.checked=!!INV()[tsel.value];tsd.value=t.sd||"";upd();drawW()};
  tsel.onchange=load;
- tsv.onclick=()=>{const k=tnm.value.trim();if(!k)return;const o=TK();o[k]={l:n("cl"),w:n("cw"),h:n("ch"),d:isNaN(n("cd"))?15:n("cd"),t:n("tt"),ph:n("tph"),tap:isNaN(n("tap"))?0:n("tap")};SV(o);const m=INV();m[k]=tin.checked;try{localStorage.setItem("tankInv",JSON.stringify(m))}catch(e){}fcalc();tsel.value=k;load()};
+ tsv.onclick=()=>{const k=tnm.value.trim();if(!k)return;const o=TK();o[k]={l:n("cl"),w:n("cw"),h:n("ch"),d:isNaN(n("cd"))?15:n("cd"),t:n("tt"),ph:n("tph"),tap:isNaN(n("tap"))?0:n("tap"),sd:tsd.value||""};SV(o);const m=INV();m[k]=tin.checked;try{localStorage.setItem("tankInv",JSON.stringify(m))}catch(e){}fcalc();tsel.value=k;load()};
  tdl.onclick=()=>{const k=tsel.value;if(!k||!confirm(lb("למחוק את הפרופיל?","Delete this profile?")))return;const o=TK();delete o[k];SV(o);fcalc()};
  cb.onclick=()=>{const v=net(),no=n("cno"),t=n("ct"),a=n("ca"),ni=n("cni"),T=isNaN(n("tt"))?25:n("tt"),ph=isNaN(n("tph"))?7:n("tph"),tap=isNaN(n("tap"))?0:n("tap"),o=[];
   if(!(v>0)){co.textContent=lb("הכנס מידות אקווריום (אורך, רוחב, גובה).","Enter the tank size (length, width, height).");return}
@@ -132,6 +137,25 @@ function fcalc(){const q=x=>document.querySelector(x),he=L==="he",inp="width:100
   if(pct>0)o.push(lb("כמות להחלפה: ","Amount to change: ")+(v*pct/100).toFixed(1)+" L");
   if(tin.checked)o.push(lb("שים לב: יש חסרי חוליות. אל תשתמש בתרופות עם נחושת.","Note: invertebrates present. Do not use copper-based medications."));
   if(!o.length)o.push(lb("הכנס ערכי מים כדי לקבל המלצה.","Enter water values to get a recommendation."));co.textContent=o.join("\n\n")};
+ const WL=()=>{try{return JSON.parse(localStorage.getItem("wlog")||"{}")}catch(e){return{}}},TKY=()=>tnm.value.trim()||tsel.value||"";
+ const spark=(a,key,name)=>{const v=a.map(r=>r[key]).filter(x=>x!=null&&!isNaN(x));if(v.length<2)return"";const mx=Math.max(...v,0.0001),W=300,H=50,pts=v.map((y,i)=>(i*(W-8)/(v.length-1)+4).toFixed(1)+","+(H-4-y/mx*(H-8)).toFixed(1)).join(" ");
+  return `<div style="margin-top:8px"><div class="note">${name}: ${v[v.length-1]} ppm (${lb("מקס","max")} ${mx})</div><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${name}"><polyline points="${pts}" fill="none" stroke="var(--g,#2e7d32)" stroke-width="2"/></svg></div>`};
+ const drawW=()=>{const k=TKY(),a=(WL()[k]||[]).slice(-30),t=TK()[k]||{},r=a[a.length-1];let c="";
+  if(t.sd){const dd=Math.floor((Date.now()-new Date(t.sd).getTime())/864e5);if(dd>=0&&dd<=70){c=lb("יום "+dd+" מההקמה (מחזור רגיל: 4 עד 6 שבועות).","Day "+dd+" since setup (a normal cycle takes 4 to 6 weeks).")+"\n";
+   if(!r)c+=lb("עוד אין מדידות. מדוד אמוניה ונטריט כל יומיים עד שלושה, ושמור ביומן.","No readings yet. Test ammonia and nitrite every 2 to 3 days and save them here.");
+   else if(r.ni>0)c+=lb("שלב 2: יש נטריט, המחזור באמצע. עדיין לא מוסיפים דגים חדשים.","Stage 2: nitrite is present, the cycle is half way. Do not add new fish yet.");
+   else if(r.a>0)c+=lb("שלב 1: יש אמוניה והחיידקים מתפתחים. לא מוסיפים דגים בלי חנות או מומחה.","Stage 1: ammonia is present while bacteria grow. Do not add fish without advice from a store or expert.");
+   else if(r.no>0)c+=lb("אמוניה ונטריט על 0 ויש ניטראט: נראה שהמחזור הסתיים. מוסיפים מעט דגים בכל פעם ומודדים שוב.","Ammonia and nitrite at 0 with nitrate present: the cycle looks complete. Add a few fish at a time and retest.");
+   else c+=lb("כל הערכים 0: המחזור עוד לא התחיל, או שחסרה מקור אמוניה. בדוק עם החנות.","All values 0: the cycle has not started, or there is no ammonia source. Check with your store.")}}
+  cyc.textContent=c;cyc.style.display=c?"":"none";
+  wch.innerHTML=a.length?spark(a,"no",lb("ניטראט","Nitrate"))+spark(a,"a",lb("אמוניה","Ammonia"))+spark(a,"ni",lb("ניטריט","Nitrite")):"";
+  wls.innerHTML=a.slice(-6).reverse().map(x=>`<div class="note">${esc(x.d)}: ${lb("ניטראט","NO3")} ${x.no??"-"} · ${lb("אמוניה","NH3")} ${x.a??"-"} · ${lb("ניטריט","NO2")} ${x.ni??"-"} · pH ${x.ph??"-"} · ${x.T??"-"}C</div>`).join("")};
+ wsv.onclick=()=>{const k=tnm.value.trim()||tsel.value;if(!k){wmsg.textContent=lb("תן שם לאקווריום ושמור פרופיל קודם.","Name the tank and save its profile first.");return}
+  const f=x=>isNaN(x)?null:x,r={d:new Date().toISOString().slice(0,10),no:f(n("cno")),a:f(n("ca")),ni:f(n("cni")),ph:f(n("tph")),T:f(n("tt"))};
+  if(r.no==null&&r.a==null&&r.ni==null){wmsg.textContent=lb("הכנס לפחות ערך אחד: ניטראט, אמוניה או ניטריט.","Enter at least one value: nitrate, ammonia or nitrite.");return}
+  const o=WL();(o[k]=o[k]||[]).push(r);o[k]=o[k].slice(-200);try{localStorage.setItem("wlog",JSON.stringify(o))}catch(e){}wmsg.textContent=lb("נשמר.","Saved.");drawW()};
+ tnm.oninput=drawW;tsd.onchange=()=>{const k=tsel.value;if(!k)return;const o=TK();if(o[k]){o[k].sd=tsd.value||"";SV(o)}drawW()};
+ drawW();
  if(tn.length){tsel.value=tn[0];load()}}
 function flog(){const f0=FSx(),D=DOMAINS[DOM],lb_=D.lab||{},f=Object.assign({},f0,Object.fromEntries(Object.entries(lb_).map(([k,v])=>[k,v[L]]))),EV=D.events,ALL=lg().filter(x=>dom_(x)===DOM),L_=ALL.filter(x=>x.kind!=="ins"),INS=ALL.filter(x=>x.kind==="ins"),plots=[...new Set(L_.map(x=>x.plot))];const inp="width:100%;padding:8px;font:inherit;margin-top:2px";
  const today=new Date().toISOString().slice(0,10);
@@ -318,7 +342,7 @@ function show(id){const t=T(),c=crop(CROPS.find(x=>x.id==id));
  document.getElementById("b").onclick=home;scrollTo(0,0);
  if(c.wiki){const h=document.createElement("div");h.id="pimg";app.querySelector(".detail h3").after(h);wikiImg(c.wiki).then(o=>{if(!o||!h.isConnected)return;const im=document.createElement("img");im.alt=c.name;im.src=o.src;im.style.cssText="width:100%;max-height:240px;object-fit:cover;border-radius:12px";im.onload=()=>{h.appendChild(im);const n=document.createElement("p");n.className="note";n.style.cssText="font-size:10px;opacity:.6;margin:2px 0 8px";const l=document.createElement("a");l.href=o.page;l.target="_blank";l.rel="noopener";l.textContent="📷 "+(o.by||"Wikimedia Commons")+" · "+o.lic;n.appendChild(l);h.appendChild(n)}})}}
 head();SYNC.init();SPECIES.load();gated()?gate():(tabs(),diag());
-const VER="v79";
+const VER="v80";
 if("serviceWorker"in navigator){navigator.serviceWorker.register("sw.js").then(r=>r.update());let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)location.reload();had=true})}
 document.getElementById("hd").insertAdjacentHTML("afterend",`<div style="text-align:center;font-size:11px;color:#999;padding:2px" id="ver">${VER}</div>`);
 </script></body></html>
