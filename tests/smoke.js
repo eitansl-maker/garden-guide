@@ -64,4 +64,5 @@ const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
   if(lang==='en')ok(!/[֐-׿]/.test((await txt()).replace(/עברית/g,'')),'en: pets log has no Hebrew');
   await p.evaluate(()=>setDomain('plants'));await p.click('#t2');await p.click('[data-f=log]');ok((await txt()).includes('Plot A')&&!(await txt()).includes('Rex'),lang+': back to plants, logs separate');
   ok(errs.length===0,lang+': no page errors '+errs.join(';'));await ctx.close()}
+ {const sw=require('fs').readFileSync(require('path').join(__dirname,'..','sw.js'),'utf8');ok(sw.length>100&&/fetch/.test(sw)&&/caches/.test(sw),'sw.js is not empty (offline support)');const v=(require('fs').readFileSync(require('path').join(__dirname,'..','index.html'),'utf8').match(/VER="(v\d+)"/)||[])[1],c=(sw.match(/garden-(v\d+)/)||[])[1];ok(v&&v===c,'cache name matches app version ('+v+' vs '+c+')')}
  await b.close();console.log(fails?`\n${fails} FAILED`:'\nALL PASSED');process.exit(fails?1:0)})()
