@@ -3,7 +3,7 @@ let fails=0;const ok=(c,m)=>{console.log((c?'PASS ':'FAIL ')+m);if(!c)fails++};
 const mem={};global.localStorage={getItem:k=>k in mem?mem[k]:null,setItem:(k,v)=>{mem[k]=v}};
 global.window=global;global.location={origin:'https://x.test',pathname:'/g/'};
 require('../sync.js');
-function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],tombstones:[],profiles:[{id:'u1',country:'DK',domains:['pets']}]};let n=0;
+function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],measurements:[],tombstones:[],profiles:[{id:'u1',country:'DK',domains:['pets']}]};let n=0;
  const from=t=>{let op='select',f=[],pl=null;
   const b={select(){return b},eq(c,v){f.push(r=>r[c]===v);return b},in(c,vs){f.push(r=>vs.includes(r[c]));return b},
    insert(p){op='insert';pl=[].concat(p);return b},upsert(p){op='upsert';pl=[].concat(p);return b},delete(){op='delete';return b},update(p){op='update';pl=p;return b},
@@ -56,6 +56,18 @@ function fake(){const db={spaces:[],subjects:[],events:[],reminders:[],tombstone
  // unknown country in the cloud does not fail the sync
  {const orig=c.from;c.from=tb=>{const b=orig(tb);if(tb==='profiles'){const u=b.update.bind(b);b.update=p=>{if(p.country==='ZZ'){const x={eq(){return x},then(res){return Promise.resolve({data:null,error:{code:'23503',message:'fk'}}).then(res)}};return x}return u(p)}}return b};
   localStorage.setItem('country','ZZ');await S.sync();ok(!S.err,'unknown country (FK error) does not fail sync '+S.err);c.from=orig;localStorage.setItem('country','FI')}
+ // aquarium readings sync to public.measurements
+ localStorage.setItem('wlog',JSON.stringify({Main:[{d:'2026-11-10',no:20,a:0.5,ni:0,ph:7.2,T:25},{d:'2026-11-12',no:null,a:0.25,ni:null,ph:null,T:null}]}));
+ await S.sync();ok(!S.err,'readings sync no error '+S.err);
+ const aq=c.db.spaces.find(x=>x.domain==='aquarium'&&x.name==='Main');
+ ok(aq&&c.db.measurements.length===6,'readings become one measurement row per value ('+c.db.measurements.length+')');
+ ok(c.db.measurements.some(m=>m.metric==='ammonia'&&m.value===0.25&&m.unit==='ppm'&&m.measured_at==='2026-11-12T12:00:00Z'),'metric, value, unit and date mapped');
+ const n0=c.db.measurements.length;await S.sync();ok(c.db.measurements.length===n0,'second readings sync is idempotent');
+ c.db.measurements.push({id:'m-remote',space_id:aq.id,metric:'nitrate',value:15,unit:'ppm',measured_at:'2026-11-14T12:00:00Z'});
+ await S.sync();const wl=JSON.parse(localStorage.getItem('wlog')).Main;
+ ok(wl.length===3&&wl[2].d==='2026-11-14'&&wl[2].no===15,'reading added on another device is pulled and sorted');
+ await S.sync();ok(JSON.parse(localStorage.getItem('wlog')).Main.length===3,'pulled reading is not duplicated');
+ localStorage.setItem('wlog','{}');
  // errors surface
  c.from=()=>({select(){return this},eq(){return this},in(){return this},delete(){return this},then(res){return Promise.resolve({data:null,error:{message:'boom'}}).then(res)}});
  await S.sync();ok(S.err==='boom','error surfaced: '+S.err);
