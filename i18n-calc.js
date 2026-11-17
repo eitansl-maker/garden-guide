@@ -680,6 +680,27 @@ window.CT={
 "pt": "Olá, uma mensagem sobre o talhão {0}",
 "pl": "Dzień dobry, wiadomość dotycząca działki {0}"
 },
+"This research was done in a Middle Eastern country (Israel), under climate and growing conditions that may differ from yours. Use it as inspiration and check with a local advisor.": {
+"de": "Diese Forschung wurde in einem Land des Nahen Ostens (Israel) durchgeführt, unter Klima- und Anbaubedingungen, die sich von deinen unterscheiden können. Nutze sie als Anregung und frage einen örtlichen Berater.",
+"da": "Denne forskning er udført i et land i Mellemøsten (Israel) under klima- og dyrkningsforhold, der kan afvige fra dine. Brug den som inspiration og tjek med en lokal rådgiver.",
+"fi": "Tämä tutkimus tehtiin Lähi-idän maassa (Israelissa) ilmasto- ja viljelyolosuhteissa, jotka voivat poiketa omistasi. Käytä sitä inspiraationa ja tarkista paikalliselta neuvojalta.",
+"pt": "Esta investigação foi feita num país do Médio Oriente (Israel), em condições de clima e cultivo que podem ser diferentes das suas. Use-a como inspiração e confirme com um consultor local.",
+"pl": "To badanie przeprowadzono w kraju Bliskiego Wschodu (Izrael), w warunkach klimatycznych i uprawowych, które mogą różnić się od Twoich. Traktuj je jako inspirację i skonsultuj się z lokalnym doradcą."
+},
+"Research from a Middle Eastern country": {
+"de": "Forschung aus einem Land des Nahen Ostens",
+"da": "Forskning fra et land i Mellemøsten",
+"fi": "Tutkimus Lähi-idän maasta",
+"pt": "Investigação de um país do Médio Oriente",
+"pl": "Badanie z kraju Bliskiego Wschodu"
+},
+"There are no local guides for your country yet. The guides here come from research in the Middle East. Official sources for your country are listed below.": {
+"de": "Für dein Land gibt es noch keine lokalen Leitfäden. Die Leitfäden hier stammen aus Forschung im Nahen Osten. Offizielle Quellen deines Landes stehen unten.",
+"da": "Der er endnu ingen lokale vejledninger for dit land. Vejledningerne her stammer fra forskning i Mellemøsten. Officielle kilder for dit land står nedenfor.",
+"fi": "Maallesi ei ole vielä paikallisia oppaita. Täällä olevat oppaat perustuvat Lähi-idän tutkimukseen. Maasi viralliset lähteet ovat alla.",
+"pt": "Ainda não há guias locais para o seu país. Os guias aqui vêm de investigação no Médio Oriente. As fontes oficiais do seu país estão abaixo.",
+"pl": "Nie ma jeszcze lokalnych poradników dla Twojego kraju. Poradniki tutaj pochodzą z badań na Bliskim Wschodzie. Oficjalne źródła Twojego kraju są poniżej."
+},
 "Weight": {
 "de": "Gewicht",
 "da": "Vægt",
